@@ -1,6 +1,8 @@
 package com.ucla.nesl.app;
 
 
+import java.util.ArrayList;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.hardware.SensorManager;
@@ -11,10 +13,12 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.app.universalsensorapp.R;
 import com.ucla.nesl.lib.UniversalEventListener;
 import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorEvent;
+import com.ucla.nesl.lib.UniversalSensorNameMap;
 import com.ucla.nesl.universalsensormanager.UniversalSensorManager;
 
 public class UniversalSensorApp extends Activity implements UniversalEventListener {
@@ -31,7 +35,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        disconnectButton = (Button)findViewById(R.id.disconnectButton);
+        disconnectButton = (Button)findViewById(R.id.startDriver);
         queryButton = (Button)findViewById(R.id.queryButton);
         messageTextView = (TextView)findViewById(R.id.messageTextView);
         mManager = UniversalSensorManager.create(getApplicationContext());
@@ -50,15 +54,14 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             @Override
             public void onClick(View v) {
 //                mManager.registerListener("ad", 1, 1);
-//            	Device[] device;
-//            	device = mManager.listDevices();
-//            	if (device == null)
-//            		Log.i(tag, "listDevices returned null");
-//            	else {
-//            		for (int i = 0; i < device.length; i++) {
-//            			Log.i(tag, "device[" + i +"]:" + device[i].getdevID());
-//            		}
-//            	}
+            	ArrayList<Device> d = mManager.listDevices();
+            	Log.i(tag, "listing devices " + d.size());
+            	for (Device device:mManager.listDevices())
+            	{
+            		Log.i(tag, device.vendorID);
+            		for (int i = 0; i < device.sensorList.size(); i++)
+            			Log.i(tag, UniversalSensorNameMap.getName(device.sensorList.get(i)));
+            	}
             }
         });
     }

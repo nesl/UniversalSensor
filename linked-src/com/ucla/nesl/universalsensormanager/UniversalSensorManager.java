@@ -1,5 +1,7 @@
 package com.ucla.nesl.universalsensormanager;
 
+import java.util.ArrayList;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -42,7 +44,7 @@ public class UniversalSensorManager {
 		connectRemote();
 	}
 	
-	public Device[] listDevices()
+	public ArrayList<Device> listDevices()
 	{
 		try {
 			return remoteConnection.listDevices();

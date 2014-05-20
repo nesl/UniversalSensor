@@ -37,6 +37,7 @@ public class UniversalService extends Service {
     	UniversalService parent;
     	Map<String, UniversalServiceDevice> registeredDevices = new HashMap<String, UniversalServiceDevice>();
     	Map<String, UniversalServiceSensor> registeredSensors = new HashMap<String, UniversalServiceSensor>();
+    	ArrayList<IUniversalSensorManager>  registeredListeners = new ArrayList<IUniversalSensorManager>();
     	
     	public UniversalManagerService(UniversalService parent) {
     		this.parent = parent;
@@ -57,6 +58,7 @@ public class UniversalService extends Service {
 		public boolean registerListener(IUniversalSensorManager mManager,
 				String devID, int sType, int rateUs) throws RemoteException {
 			Log.i(tag, "registering listener");
+//			reg
 			return true;
 		}
 
@@ -65,10 +67,10 @@ public class UniversalService extends Service {
 		}
 
 		@Override
-		public String registerDriver(IUniversalDriverManager mDriver,
-				Device device) throws RemoteException {
+		public String registerDriver(IUniversalDriverManager mDriver, Device device) throws RemoteException {
 			UniversalServiceDevice mdevice = new UniversalServiceDevice(device);
-			String devID = ""+Math.random();  //compute devID, for now using a random number
+			Log.d(tag, "registering driver " + device.vendorID + " mdevice sensorlist " + device.sensorList);
+			String devID = new String(""+Math.random());  //compute devID, for now using a random number
 			mdevice.setDevID(devID);
 			registeredDevices.put(devID, mdevice);
 			return devID;
@@ -77,8 +79,6 @@ public class UniversalService extends Service {
 		@Override
 		public void registerDriverSensor(String devID, int sType)
 				throws RemoteException {
-			// TODO Auto-generated method stub
-			
 		}    	
     }
 }

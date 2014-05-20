@@ -1,34 +1,44 @@
 package com.ucla.nesl.universaldrivermanager;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.UniversalDriverListener;
 
 public class UniversalDriverManager {
+	private static String tag = UniversalDriverManager.class.getCanonicalName();
 	private String UNIVERSALServicePackage = "com.ucla.nesl.universalsensorservice";
 	private String UNIVERSALServiceClass = "com.ucla.nesl.universalservice.UniversalService";
 	private Context context;
 	private UniversalDriverRemoteConnection remoteConnection;
-	private static UniversalDriverManager mManager = null;
-	
-	public static UniversalDriverManager create(Context context)
+//	private UniversalDriverManager mManager = null;
+	private Device device = null;
+	private UniversalDriverListener listener = null;
+	private boolean registered = false;
+
+	public static UniversalDriverManager create(Context context, String vendorID)
 	{
-		if (mManager != null)
-			return mManager;
-		mManager = new UniversalDriverManager(context);
-		return mManager;
+//		if (mManager != null)
+//			return mManager;
+//		mManager = new UniversalDriverManager(context);
+//		return mManager;
+		return new UniversalDriverManager(context, vendorID);
 	}
-	
-	public UniversalDriverManager(Context context) {
+
+	public UniversalDriverManager(Context context, String vendorID) {
 		this.context = context;
+		device = new Device(vendorID);
 		remoteConnection = new UniversalDriverRemoteConnection(this);
 		connectRemote();
 	}
-	
+
 	public Boolean push(int sType, float[] values, int valueSize, int accuracy, float timestamp)
 	{
 		SensorParcel sp = new SensorParcel(sType, values, valueSize, accuracy, timestamp);
@@ -36,19 +46,39 @@ public class UniversalDriverManager {
 		return true;
 	}
 
-	public void registerDriver(Device device)
+	public void registerDriver(UniversalDriverListener listener, int sType)
 	{
-		remoteConnection.registerDriver(new UniversalDriverManagerStub(), device);
+		boolean flag = false;
+		if (device.addSensor(sType))
+			flag = true;
+		if (!registered) {
+			device.devID = remoteConnection.registerDriver(new UniversalDriverManagerStub(this), device);
+			registered = true;
+			flag = false;
+		}
+		Log.i(tag, "devID: " + device.devID);
+		if (flag)
+			registerSensor(device.devID, sType);
 	}
 
-	void connectRemote()
+	public void registerSensor(String devID, int sType)
+	{
+		remoteConnection.registerSensor(devID, sType);
+	}
+
+	private void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");
 		intent.setClassName(UNIVERSALServicePackage, UNIVERSALServiceClass);
 		context.bindService(intent, remoteConnection, Context.BIND_AUTO_CREATE);
 	}
-	
+
 	public class UniversalDriverManagerStub extends IUniversalDriverManager.Stub {
+		private UniversalDriverManager dManager;
+
+		public UniversalDriverManagerStub(UniversalDriverManager dManager) {
+			this.dManager = dManager;
+		}
 
 		@Override
 		public void setRate(int rate) throws RemoteException {

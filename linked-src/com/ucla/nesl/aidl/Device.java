@@ -5,23 +5,50 @@ import java.util.ArrayList;
 import android.R.integer;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 public class Device implements Parcelable{
 	public String devID;
 	public String vendorID;
-	public ArrayList<integer> sensorList;
+	public ArrayList<Integer> sensorList;
 
 	public Device()
 	{
 		devID = null;
 		vendorID = null;
 	}
-	
-	public Device(String devID)
+
+	public Device(String vendorID)
 	{
-		this.devID = devID;
+		this.devID = null;
+		this.vendorID = new String(vendorID);
+		sensorList = new ArrayList<Integer>();
 	}
-	
+
+	public boolean addSensor(int sType)
+	{
+		Integer tmp = new Integer(sType);
+		if (sensorList.indexOf(tmp) >= 0)
+			return false;
+		sensorList.add(tmp);
+		return true;
+	}
+
+	public boolean removeSensor(int sType)
+	{
+		Integer tmp = new Integer(sType);
+		int index = sensorList.indexOf(tmp);
+		if (index >= 0) {
+			sensorList.remove(index);
+			return true;
+		} else
+			return false;
+	}
+	public String getVendorID()
+	{
+		return vendorID;
+	}
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -32,11 +59,41 @@ public class Device implements Parcelable{
 		return devID;
 	}
 	
+	public void setdevID(String devID)
+	{
+		this.devID = devID;
+	}
+
+	private int[] getIntArray()
+	{
+		int[] sensors = new int[sensorList.size()];
+		for (int i = 0; i < sensorList.size(); i++)
+		{
+			sensors[i] = sensorList.get(i);
+		}
+		return sensors;
+	}
+	
+	public ArrayList<Integer> getArrayList(int[] sensors)
+	{
+		ArrayList<Integer> alist = new ArrayList<Integer>();
+		
+		for(int i = 0; i < sensors.length; i++)
+		{
+			alist.add(new Integer(sensors[i]));
+		}
+		return alist;
+	}
+
 	public static final Parcelable.Creator<Device> CREATOR = new Creator<Device>() {
 		public Device createFromParcel(Parcel src)
 		{
+			int[] iarray;
 			Device device = new Device();
-			device.devID = src.readString();
+			device.vendorID = src.readString();
+//			device.sensorList = device.getArrayList(src.createIntArray());
+			iarray = src.createIntArray();
+			device.sensorList = device.getArrayList(iarray);
 			return device;
 		}
 
@@ -48,7 +105,7 @@ public class Device implements Parcelable{
 
 	@Override
 	public void writeToParcel(Parcel parcel, int flags) {
-		parcel.writeString(devID);
+		parcel.writeString(vendorID);
+		parcel.writeIntArray(getIntArray());
 	}
-
 }

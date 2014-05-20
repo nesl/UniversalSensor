@@ -33,11 +33,19 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 			service.onSensorChanged(sp);
 		} catch(RemoteException e) {}
 	}
-	
-	void registerDriver(UniversalDriverManagerStub mDriver, Device device)
+
+	String registerDriver(UniversalDriverManagerStub mDriver, Device device)
 	{
 		try {
-			service.registerDriver(mDriver, device);
+			return service.registerDriver(mDriver, device);
+		} catch(RemoteException e) {}
+		return null;
+	}
+
+	void registerSensor(String devID, int sType)
+	{
+		try {
+			service.registerDriverSensor(devID, sType);
 		} catch(RemoteException e) {}
 	}
 }

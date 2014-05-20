@@ -1,5 +1,7 @@
 package com.ucla.nesl.universalsensormanager;
 
+import java.util.ArrayList;
+
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
@@ -28,13 +30,13 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 	public void onServiceDisconnected(ComponentName name) {
 	}
 	
-	public Device[] listDevices() throws RemoteException
+	public ArrayList<Device> listDevices() throws RemoteException
 	{
 		if (service == null) {
 			mManager.connectRemote();
 			return null;
 		}
-		return null;
+		return (ArrayList<Device>)service.listDevices();
 	}
 	
 	public void registerListener(UniversalSensorManagerStub cb,
