@@ -1,5 +1,6 @@
 package com.ucla.nesl.aidl;
 
+import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorHelper;
 
 import android.os.Parcel;
@@ -17,6 +18,22 @@ public class SensorParcel implements Parcelable {
 	public SensorParcel()
 	{
 	}
+	
+	public SensorParcel(SensorParcel sp)
+	{
+		this.devID = new String(sp.devID);
+		this.sType = sp.sType;
+		this.timestamp = sp.timestamp;
+		this.accuracy = sp.accuracy;
+		this.valueSize = sp.valueSize;
+		this.values = new float[sp.valueSize];
+
+		// try System.arraycopy();
+		for (int i = 0; i < valueSize; i++) {
+			this.values[i]	= sp.values[i];
+		}
+	}
+
 	public SensorParcel(String devID, int sType, float[] values,  int valueSize, int accuracy,
 			float timestamp) {
 		this.devID = devID;
@@ -33,6 +50,18 @@ public class SensorParcel implements Parcelable {
 
 	}
 	
+	public SensorParcel(int sType, float[] values, float timestamp) {
+		this.sType = sType;
+		this.timestamp = timestamp;
+		this.valueSize = values.length;
+		this.values = new float[valueSize];
+
+		// try System.arraycopy();
+		for (int i = 0; i < valueSize; i++) {
+			this.values[i]	= values[i];
+		}
+	}
+
 	@Override
 	public int describeContents() {
 		return 0;

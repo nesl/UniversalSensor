@@ -14,6 +14,7 @@ import android.util.Log;
 
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensor;
+import com.ucla.nesl.lib.UniversalSensorEvent;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 
 public class UniversalDriverService extends Service implements SensorEventListener, UniversalDriverListener {
@@ -50,6 +51,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		// Only the exposed sensors will be visible to the applications
 		ArrayList<Integer> sensorList = new ArrayList<Integer>();
 		sensorList.add(new Integer(UniversalSensor.TYPE_ACCELEROMETER));
+		sensorList.add(new Integer(UniversalSensor.TYPE_LIGHT));
         mdriverManager1.registerDriver(this, sensorList);
 	}
 
@@ -81,7 +83,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	// this is android's SensorEventListener function
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		mdriverManager1.push(event.sensor.getType(), event.values, event.accuracy, event.timestamp);
+		mdriverManager1.push(new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp));
 	}
 
 	@Override

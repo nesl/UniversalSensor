@@ -61,6 +61,7 @@ public class UniversalSensorManager {
 			Log.i(tag, "mstub is null " + devID);
 			return false;
 		}
+		mstub.registerListener(mlistener);
 		remoteConnection.registerListener(mstub, devID, 1, 1);
 		return true;
 	}
@@ -83,22 +84,28 @@ public class UniversalSensorManager {
 		remoteConnection.setRate(rate);
 	}
 	
-//	public UniversalSensor getDefaultSensor(int sType)
-//	{
-//		
-//	}
-	
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
 		UniversalSensorManager mManager = null;
+		int i = 0;
 		UniversalSensorManagerStub(UniversalSensorManager mManager)
 		{
 			this.mManager = mManager;
 		}
 
+		public void registerListener(UniversalEventListener mlistener)
+		{
+			this.mlistener = mlistener;
+		}
+		
 		@Override
 		public void onSensorChanged(SensorParcel event) throws RemoteException {
-			Log.i(tag, "Event received:" + event.values[0]);
+			i++;
+			if (i==50) {
+				Log.i(tag, "onSensorChanged");
+				mlistener.onSensorChanged(new UniversalSensorEvent(event));
+				i = 0;
+			}
 		}
 	}
 }

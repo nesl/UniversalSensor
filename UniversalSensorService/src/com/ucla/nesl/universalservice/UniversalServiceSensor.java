@@ -2,11 +2,16 @@ package com.ucla.nesl.universalservice;
 
 import java.util.ArrayList;
 
+import android.os.RemoteException;
+import android.util.Log;
+
 import com.ucla.nesl.aidl.SensorParcel;
 
 public class UniversalServiceSensor {
+	private static String tag = UniversalServiceSensor.class.getCanonicalName();
 	private String devID;
 	public  int sType;
+	private int cnt = 0;
 	private ArrayList<UniversalServiceListener> registeredlisteners;
 	
 	public UniversalServiceSensor(String devID, int sType)
@@ -40,7 +45,17 @@ public class UniversalServiceSensor {
 	public void onSensorChanged(SensorParcel event)
 	{
 		// Go through the list of listeners and send the data to them
-		// for (UniversalServiceListener mlistener: registeredlisteners)
+		for (UniversalServiceListener mlistener: registeredlisteners)
+		{
+			cnt++;
+			if(cnt == 50) {
+				Log.i(tag, "onSensorChanged");
+				cnt = 0;
+			}
+			try {
+				mlistener.getListener().onSensorChanged(event);
+			} catch(RemoteException e){}
+		}
 	}
 	
 	public boolean isEmpty()

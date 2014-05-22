@@ -5,12 +5,12 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
 import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalDriverListener;
+import com.ucla.nesl.lib.UniversalSensorEvent;
 
 public class UniversalDriverManager {
 	private static String tag = UniversalDriverManager.class.getCanonicalName();
@@ -53,10 +53,10 @@ public class UniversalDriverManager {
 		this.devID = devID;
 	}
 	
-	public Boolean push(int sType, float[] values, int accuracy, float timestamp)
+	public Boolean push(UniversalSensorEvent mSensor)
 	{
-		SensorParcel sp = new SensorParcel(devID, sType, values, values.length, accuracy, timestamp);
-		remoteConnection.push(sp);
+		mSensor.setDevID(devID);
+		remoteConnection.push(mSensor);
 		return true;
 	}
 
