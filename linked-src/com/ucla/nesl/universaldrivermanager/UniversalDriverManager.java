@@ -20,8 +20,9 @@ public class UniversalDriverManager {
 	private UniversalDriverRemoteConnection remoteConnection;
 //	private UniversalDriverManager mManager = null;
 	private Device device = null;
+	private String devID  = null;
+	private String vendorID = null;
 	private UniversalDriverListener listener = null;
-	private boolean registered = false;
 
 	public static UniversalDriverManager create(Context context, String vendorID)
 	{
@@ -34,43 +35,12 @@ public class UniversalDriverManager {
 
 	public UniversalDriverManager(Context context, String vendorID) {
 		this.context = context;
-		device = new Device(vendorID);
+//		device = new Device(vendorID);
+		this.vendorID = new String(vendorID);
 		remoteConnection = new UniversalDriverRemoteConnection(this);
 		connectRemote();
 	}
-
-	public Boolean push(int sType, float[] values, int accuracy, float timestamp)
-	{
-		SensorParcel sp = new SensorParcel(device.devID, sType, values, values.length, accuracy, timestamp);
-		remoteConnection.push(sp);
-		return true;
-	}
-
-	public void registerDriver(UniversalDriverListener listener, int sType)
-	{
-		boolean flag = false;
-		if (device.addSensor(sType))
-			flag = true;
-		if (!registered) {
-			device.devID = remoteConnection.registerDriver(new UniversalDriverManagerStub(this), device);
-			registered = true;
-			flag = false;
-		}
-		Log.i(tag, "devID: " + device.devID);
-		if (flag)
-			enableSensor(device.devID, sType);
-	}
-
-	public void enableSensor(String devID, int sType)
-	{
-		remoteConnection.addSensor(devID, sType);
-	}
-
-	public void unregisterDriver(UniversalDriverListener listener, int sType)
-	{
-		device.removeSensor(sType);
-		remoteConnection.removeSensor(device.devID, sType);
-	}
+	
 	private void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");
@@ -78,20 +48,87 @@ public class UniversalDriverManager {
 		context.bindService(intent, remoteConnection, Context.BIND_AUTO_CREATE);
 	}
 
+	public void setDevID(String devID)
+	{
+		this.devID = devID;
+	}
+	
+	public Boolean push(int sType, float[] values, int accuracy, float timestamp)
+	{
+		SensorParcel sp = new SensorParcel(devID, sType, values, values.length, accuracy, timestamp);
+		remoteConnection.push(sp);
+		return true;
+	}
+
+	public Boolean registerDriver(UniversalDriverListener mlistener, ArrayList<Integer> sTypeList)
+	{
+		// devID null means that the connection establishment is not yet complete
+		if (devID == null) {
+			return false;
+		}
+
+		if (device == null || device.isEmpty()) {
+			// First time registeration
+			if(device == null)
+				device = new Device(vendorID, devID);
+			device.addSensor(sTypeList);
+			try {
+				remoteConnection.registerDriver(new UniversalDriverManagerStub(this, mlistener), device);
+			} catch (RemoteException e)
+			{
+				device = null;
+				return false;
+			}
+		} else {
+			for (int sType : sTypeList)
+				try {
+					addSensor(device.getDevID(), sType);
+				} catch (RemoteException e){return false;}
+		}
+		return true;
+	}
+
+	public boolean addSensor(String devID, int sType) throws RemoteException
+	{
+		return remoteConnection.addSensor(devID, sType);
+	}
+
+	public boolean unregisterDriver(UniversalDriverListener listener, ArrayList<Integer> sTypeList)
+	{
+		try {
+			for (int sType : sTypeList) {
+				device.removeSensor(sType);
+				remoteConnection.removeSensor(device.getDevID(), sType);
+			}
+
+			if (device.isEmpty())
+				remoteConnection.unregisterDriver(device.getDevID());
+		} catch (RemoteException e) {return false;}
+		return true;
+	}
+	
 	public class UniversalDriverManagerStub extends IUniversalDriverManager.Stub {
 		private UniversalDriverManager dManager;
+		UniversalDriverListener mlistener;
 
-		public UniversalDriverManagerStub(UniversalDriverManager dManager) {
+		public UniversalDriverManagerStub(UniversalDriverManager dManager, UniversalDriverListener mlistener) {
 			this.dManager = dManager;
+			this.mlistener = mlistener;
 		}
 
 		@Override
 		public void setRate(int rate) throws RemoteException {
-			if (rate > 0) {
-				dManager.registerDriver(null, rate);
-			} else {
-				dManager.unregisterDriver(null, -rate);
-			}
+			mlistener.setRate(rate);
+		}
+
+		@Override
+		public void activateSensor(int sType) throws RemoteException {
+			mlistener.activateSensor(sType);
+		}
+
+		@Override
+		public void deactivateSensor(int sType) throws RemoteException {
+			mlistener.deactivateSensor(sType);
 		}
 	}
 }

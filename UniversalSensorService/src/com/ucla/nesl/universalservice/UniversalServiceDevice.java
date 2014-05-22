@@ -1,28 +1,38 @@
 package com.ucla.nesl.universalservice;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
 
-public class UniversalServiceDevice {
-	private Device device;
-	public IUniversalDriverManager mDriver;
-	Map<String, UniversalServiceSensor> sensorlist;
+public class UniversalServiceDevice extends Device {
+	// Ibinder handler used to communicate with the driver
+	public IUniversalDriverManager mDriverStub;
 	
-	public UniversalServiceDevice(Device device) {
-		this.device = device;
-		sensorlist = new HashMap<String, UniversalServiceSensor>();
+	// This arraylist object maintains the list of all the sensors registered
+	// by this device. So, two things can be done on sensor count zero
+	// a) remove the device from the listing
+	// b) only remove the device when an explicit unregister is received
+	private ArrayList<UniversalServiceSensor> sensorList = new ArrayList<UniversalServiceSensor>();
+	
+	public UniversalServiceDevice(Device device, IUniversalDriverManager mDriverStub) {
+		super(device);
+		this.mDriverStub = mDriverStub;
 	}
 	
-	public void setDevID(String devID)
+	public void addSensor(UniversalServiceSensor msensor)
 	{
-		this.device.devID = devID;
+		sensorList.add(msensor);
 	}
 	
-	public Device getDevice()
+	public void removeSensor(UniversalServiceSensor msensor)
 	{
-		return device;
+		if(sensorList.contains(msensor))
+			sensorList.remove(sensorList.indexOf(msensor));
+	}
+	
+	public void onDestroy()
+	{
+		// sensorlist always should be empty
 	}
 }

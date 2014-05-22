@@ -25,7 +25,7 @@ import com.ucla.nesl.universalsensormanager.UniversalSensorManager;
 public class UniversalSensorApp extends Activity implements UniversalEventListener {
     private Button disconnectButton;
     private Button queryButton;
-    private Button setSensor;
+    private Button unregisterSensorButton;
     private EditText sTypeText;
     private TextView messageTextView;
     private String tag = UniversalSensorApp.class.getCanonicalName();
@@ -33,6 +33,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
 	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
 	private UniversalSensor msensor;
+	private Device di;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -40,7 +41,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         setContentView(R.layout.main);
         disconnectButton = (Button)findViewById(R.id.startDriver);
         queryButton = (Button)findViewById(R.id.queryButton);
-        setSensor = (Button)findViewById(R.id.setsensor);
+        unregisterSensorButton = (Button)findViewById(R.id.setsensor);
         sTypeText = (EditText)findViewById(R.id.sType);
         messageTextView = (TextView)findViewById(R.id.messageTextView);
         mManager = UniversalSensorManager.create(getApplicationContext());
@@ -64,21 +65,21 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
             	for (Device device:mManager.listDevices())
             	{
-            		Log.i(tag, device.vendorID +":" + device.devID);
-            		for (int i = 0; i < device.sensorList.size(); i++)
-            			Log.i(tag, UniversalSensorNameMap.getName(device.sensorList.get(i)));
+            		Log.i(tag, device.getVendorID() +":" + device.getDevID());
+            		for (int i : device.getSensorList())
+            			Log.i(tag, UniversalSensorNameMap.getName(i));
             	}
-            	Device di = mManager.listDevices().get(0);
-                registerListener(di.devID, di.sensorList.get(0), 1);
+            	di = mManager.listDevices().get(0);
+
+                registerListener(di.getDevID(), di.getSensorList().get(0), 1);
             }
         });
         
-        setSensor.setOnClickListener(new OnClickListener() {
+        unregisterSensorButton.setOnClickListener(new OnClickListener() {
 			
 			@Override
-			public void onClick(View v) {
-				mManager.setRate(Integer.parseInt(sTypeText.getText().toString()));
-				mManager2.setRate(Integer.parseInt(sTypeText.getText().toString()));
+			public void onClick(View arg0) {
+				unregisterListener(di.getDevID(), di.getSensorList().get(0));
 			}
 		});
     }
@@ -86,8 +87,13 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     private void registerListener(String devID, int sType, int rate)
     {
     	mManager.registerListener(this, devID, sType, rate);
-//    	mManager2.registerListener(this, devID, sType, rate);
     }
+    
+    private void unregisterListener(String devID, int sType)
+    {
+    	mManager.unregisterListener(this, devID, sType);
+    }
+    
 	@Override
 	protected void onPause() 
 	{
@@ -97,7 +103,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	@Override
 	protected void onResume() {
 	    super.onResume();
-//	    mManager.registerListener(this, "asf" , SensorManager.SENSOR_DELAY_NORMAL, 2);
 	}
 	
 	@Override

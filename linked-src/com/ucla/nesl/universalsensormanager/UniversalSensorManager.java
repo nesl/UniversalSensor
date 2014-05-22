@@ -65,6 +65,12 @@ public class UniversalSensorManager {
 		return true;
 	}
 	
+	public boolean unregisterListener(UniversalEventListener mlistener, String devID, int sType)
+	{
+		remoteConnection.unregisterListener(devID, sType);
+		return true;
+	}
+	
 	void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");

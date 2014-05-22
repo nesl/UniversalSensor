@@ -53,4 +53,11 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			service.registerListener(cb, devID, sType, rateUs);
 		}catch(RemoteException e){}
 	}
+	
+	public void unregisterListener(String devID, int sType)
+	{
+		try {
+			service.unregisterListener(devID, sType);
+		}catch(RemoteException e){}
+	}
 }

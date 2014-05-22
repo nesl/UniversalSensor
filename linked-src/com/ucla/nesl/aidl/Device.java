@@ -5,12 +5,11 @@ import java.util.ArrayList;
 import android.R.integer;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 public class Device implements Parcelable{
-	public String devID;
-	public String vendorID;
-	public ArrayList<Integer> sensorList;
+	private String devID;
+	private String vendorID;
+	private ArrayList<Integer> sensorList;
 
 	public Device()
 	{
@@ -18,19 +17,53 @@ public class Device implements Parcelable{
 		vendorID = null;
 	}
 
-	public Device(String vendorID)
+	public Device(Device device)
 	{
-		this.devID = "";
+		this.devID      = new String(device.devID);
+		this.vendorID   = new String(device.vendorID);
+		this.sensorList = new ArrayList<Integer>(device.sensorList);
+	}
+
+	public Device(String vendorID, String devID)
+	{
+		this.devID = new String(devID);
 		this.vendorID = new String(vendorID);
 		sensorList = new ArrayList<Integer>();
 	}
 
+	public String getDevID()
+	{
+		return devID;
+	}
+	
+	public void setDevID(String devID)
+	{
+		this.devID = new String(devID);
+	}
+	
+	public String getVendorID()
+	{
+		return vendorID;
+	}
+	
+	public void setVendorID(String vendorID)
+	{
+		this.vendorID = vendorID;
+	}
+	
 	public boolean addSensor(int sType)
 	{
 		Integer tmp = new Integer(sType);
 		if (sensorList.indexOf(tmp) >= 0)
 			return false;
 		sensorList.add(tmp);
+		return true;
+	}
+
+	public boolean addSensor(ArrayList<Integer> sensorList)
+	{
+		for (int sType : sensorList)
+			addSensor(sType);
 		return true;
 	}
 
@@ -44,24 +77,20 @@ public class Device implements Parcelable{
 		} else
 			return false;
 	}
-	public String getVendorID()
-	{
-		return vendorID;
-	}
 
+	public ArrayList<Integer> getSensorList()
+	{
+		return sensorList;
+	}
+	
+	public boolean isEmpty()
+	{
+		return sensorList.isEmpty();
+	}
+	
 	@Override
 	public int describeContents() {
 		return 0;
-	}
-
-	public String getdevID()
-	{
-		return devID;
-	}
-	
-	public void setdevID(String devID)
-	{
-		this.devID = devID;
 	}
 
 	private int[] getIntArray()

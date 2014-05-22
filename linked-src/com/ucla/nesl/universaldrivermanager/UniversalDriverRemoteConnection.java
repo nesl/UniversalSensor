@@ -21,6 +21,9 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		this.service = IUniversalManagerService.Stub.asInterface(service);
+		try {
+			parent.setDevID(this.service.getDevID());
+		} catch(RemoteException e){}
 	}
 
 	@Override
@@ -34,26 +37,24 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 		} catch(RemoteException e) {}
 	}
 
-	String registerDriver(UniversalDriverManagerStub mDriver, Device device)
+	public boolean registerDriver(UniversalDriverManagerStub mDriver, Device device) throws RemoteException
 	{
-		try {
-			return service.registerDriver(mDriver, device);
-		} catch(RemoteException e) {}
-		return null;
+		return service.registerDriver(mDriver, device);
 	}
 
-	void addSensor(String devID, int sType)
+	public boolean unregisterDriver(String devID) throws RemoteException
 	{
-		try {
-			service.addDriverSensor(devID, sType);
-		} catch(RemoteException e) {}
+		return service.unregisterDriver(devID);
 	}
 	
-	void removeSensor(String devID, int sType)
+	public boolean addSensor(String devID, int sType) throws RemoteException
 	{
-		try {
-			service.removeDriverSensor(devID, sType);
-		} catch(RemoteException e) {}
+		return service.addDriverSensor(devID, sType);
+	}
+	
+	void removeSensor(String devID, int sType) throws RemoteException
+	{
+		service.removeDriverSensor(devID, sType);
 	}
 }
 
