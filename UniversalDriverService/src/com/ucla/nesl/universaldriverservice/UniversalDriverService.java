@@ -29,8 +29,8 @@ public class UniversalDriverService extends Service implements SensorEventListen
         super.onCreate();
         Log.i(tag, "onCreate called driver");
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), 
-        		SensorManager.SENSOR_DELAY_NORMAL);
+//        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), 
+//        		SensorManager.SENSOR_DELAY_NORMAL);
 
         // Create two drivers
         mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), "phoneSensor1");
@@ -54,7 +54,10 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	void register()
 	{
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER);
-        mdriverManager2.registerDriver(this, UniversalSensor.TYPE_MAGNETIC_FIELD);		
+//        mdriverManager2.registerDriver(this, UniversalSensor.TYPE_MAGNETIC_FIELD);		
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), 
+        		SensorManager.SENSOR_DELAY_NORMAL);
+
 	}
 
     private Runnable r = new Runnable() {
@@ -83,7 +86,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-//		mdriverManager.push(event.sensor.getType(), event.values, event.values.length, event.accuracy, event.timestamp);
+		mdriverManager1.push(event.sensor.getType(), event.values, event.accuracy, event.timestamp);
 	}
 
 	@Override

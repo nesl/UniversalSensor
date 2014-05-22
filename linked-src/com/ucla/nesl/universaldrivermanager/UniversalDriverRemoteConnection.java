@@ -42,10 +42,17 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 		return null;
 	}
 
-	void registerSensor(String devID, int sType)
+	void addSensor(String devID, int sType)
 	{
 		try {
-			service.registerDriverSensor(devID, sType);
+			service.addDriverSensor(devID, sType);
+		} catch(RemoteException e) {}
+	}
+	
+	void removeSensor(String devID, int sType)
+	{
+		try {
+			service.removeDriverSensor(devID, sType);
 		} catch(RemoteException e) {}
 	}
 }

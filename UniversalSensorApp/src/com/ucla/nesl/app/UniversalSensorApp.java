@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.ucla.nesl.aidl.Device;
@@ -24,9 +25,11 @@ import com.ucla.nesl.universalsensormanager.UniversalSensorManager;
 public class UniversalSensorApp extends Activity implements UniversalEventListener {
     private Button disconnectButton;
     private Button queryButton;
+    private Button setSensor;
+    private EditText sTypeText;
     private TextView messageTextView;
     private String tag = UniversalSensorApp.class.getCanonicalName();
-    private UniversalSensorManager mManager;    
+    private UniversalSensorManager mManager, mManager2;    
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
 	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
 	private UniversalSensor msensor;
@@ -37,8 +40,11 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         setContentView(R.layout.main);
         disconnectButton = (Button)findViewById(R.id.startDriver);
         queryButton = (Button)findViewById(R.id.queryButton);
+        setSensor = (Button)findViewById(R.id.setsensor);
+        sTypeText = (EditText)findViewById(R.id.sType);
         messageTextView = (TextView)findViewById(R.id.messageTextView);
         mManager = UniversalSensorManager.create(getApplicationContext());
+        mManager2 = UniversalSensorManager.create(getApplicationContext());
         
         disconnectButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -53,19 +59,35 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         queryButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-//                mManager.registerListener("ad", 1, 1);
             	ArrayList<Device> d = mManager.listDevices();
             	Log.i(tag, "listing devices " + d.size());
+
             	for (Device device:mManager.listDevices())
             	{
-            		Log.i(tag, device.vendorID);
+            		Log.i(tag, device.vendorID +":" + device.devID);
             		for (int i = 0; i < device.sensorList.size(); i++)
             			Log.i(tag, UniversalSensorNameMap.getName(device.sensorList.get(i)));
             	}
+            	Device di = mManager.listDevices().get(0);
+                registerListener(di.devID, di.sensorList.get(0), 1);
             }
         });
+        
+        setSensor.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				mManager.setRate(Integer.parseInt(sTypeText.getText().toString()));
+				mManager2.setRate(Integer.parseInt(sTypeText.getText().toString()));
+			}
+		});
     }
 
+    private void registerListener(String devID, int sType, int rate)
+    {
+    	mManager.registerListener(this, devID, sType, rate);
+//    	mManager2.registerListener(this, devID, sType, rate);
+    }
 	@Override
 	protected void onPause() 
 	{

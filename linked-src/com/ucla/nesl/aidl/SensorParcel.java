@@ -7,7 +7,7 @@ import android.os.Parcelable;
 import android.os.Parcelable.Creator;
 
 public class SensorParcel implements Parcelable {
-//	String devID;
+	public String devID;
 	public int sType;
 	public int valueSize;
 	public float values[];
@@ -17,8 +17,9 @@ public class SensorParcel implements Parcelable {
 	public SensorParcel()
 	{
 	}
-	public SensorParcel(int sType, float[] values,  int valueSize, int accuracy,
+	public SensorParcel(String devID, int sType, float[] values,  int valueSize, int accuracy,
 			float timestamp) {
+		this.devID = devID;
 		this.sType = sType;
 		this.timestamp = timestamp;
 		this.accuracy = accuracy;
@@ -39,7 +40,7 @@ public class SensorParcel implements Parcelable {
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-//		dest.writeString(devID);
+		dest.writeString(devID);
 		dest.writeInt(sType);
 		dest.writeFloatArray(values);
 		dest.writeInt(valueSize);
@@ -51,7 +52,7 @@ public class SensorParcel implements Parcelable {
 		public SensorParcel createFromParcel(Parcel src)
 		{
 			SensorParcel sp = new SensorParcel();
-//			sp.devID = src.readString();
+			sp.devID = src.readString();
 			sp.sType = src.readInt();
 			sp.values = src.createFloatArray();
 			sp.valueSize = src.readInt();

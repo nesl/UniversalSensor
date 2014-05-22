@@ -14,13 +14,13 @@ public class Device implements Parcelable{
 
 	public Device()
 	{
-		devID = null;
+		devID = "";
 		vendorID = null;
 	}
 
 	public Device(String vendorID)
 	{
-		this.devID = null;
+		this.devID = "";
 		this.vendorID = new String(vendorID);
 		sensorList = new ArrayList<Integer>();
 	}
@@ -88,11 +88,10 @@ public class Device implements Parcelable{
 	public static final Parcelable.Creator<Device> CREATOR = new Creator<Device>() {
 		public Device createFromParcel(Parcel src)
 		{
-			int[] iarray;
 			Device device = new Device();
+			device.devID = src.readString();
 			device.vendorID = src.readString();
-//			device.sensorList = device.getArrayList(src.createIntArray());
-			iarray = src.createIntArray();
+			int[] iarray = src.createIntArray();
 			device.sensorList = device.getArrayList(iarray);
 			return device;
 		}
@@ -105,6 +104,7 @@ public class Device implements Parcelable{
 
 	@Override
 	public void writeToParcel(Parcel parcel, int flags) {
+		parcel.writeString(devID);
 		parcel.writeString(vendorID);
 		parcel.writeIntArray(getIntArray());
 	}

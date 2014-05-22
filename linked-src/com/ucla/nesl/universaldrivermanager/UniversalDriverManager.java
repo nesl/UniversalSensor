@@ -39,9 +39,9 @@ public class UniversalDriverManager {
 		connectRemote();
 	}
 
-	public Boolean push(int sType, float[] values, int valueSize, int accuracy, float timestamp)
+	public Boolean push(int sType, float[] values, int accuracy, float timestamp)
 	{
-		SensorParcel sp = new SensorParcel(sType, values, valueSize, accuracy, timestamp);
+		SensorParcel sp = new SensorParcel(device.devID, sType, values, values.length, accuracy, timestamp);
 		remoteConnection.push(sp);
 		return true;
 	}
@@ -58,14 +58,19 @@ public class UniversalDriverManager {
 		}
 		Log.i(tag, "devID: " + device.devID);
 		if (flag)
-			registerSensor(device.devID, sType);
+			enableSensor(device.devID, sType);
 	}
 
-	public void registerSensor(String devID, int sType)
+	public void enableSensor(String devID, int sType)
 	{
-		remoteConnection.registerSensor(devID, sType);
+		remoteConnection.addSensor(devID, sType);
 	}
 
+	public void unregisterDriver(UniversalDriverListener listener, int sType)
+	{
+		device.removeSensor(sType);
+		remoteConnection.removeSensor(device.devID, sType);
+	}
 	private void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");
@@ -82,8 +87,11 @@ public class UniversalDriverManager {
 
 		@Override
 		public void setRate(int rate) throws RemoteException {
-			// TODO Auto-generated method stub
-			
+			if (rate > 0) {
+				dManager.registerDriver(null, rate);
+			} else {
+				dManager.unregisterDriver(null, -rate);
+			}
 		}
 	}
 }

@@ -3,4 +3,5 @@
     <string name="app_name">UniversalSensorApp</string>
     <string name="query_button">Query</string>
     <string name="startDriver">startDriver</string>
+    <string name="setsensor">setsensor</string>
 </resources>

@@ -23,6 +23,7 @@ public class UniversalSensorManager {
 	private String UNIVERSALServicePackage = "com.ucla.nesl.universalsensorservice";
 	private String UNIVERSALServiceClass = "com.ucla.nesl.universalservice.UniversalService";
 	private static UniversalSensorManager mManager = null;
+	private UniversalSensorManagerStub mstub = null;
 	private UniversalManagerRemoteConnection remoteConnection;
 	private Context context;
 	private static String tag = UniversalSensorManager.class.getCanonicalName();
@@ -41,6 +42,7 @@ public class UniversalSensorManager {
 	private UniversalSensorManager(Context context) {
 		this.context = context;
 		remoteConnection = new UniversalManagerRemoteConnection(this);
+		mstub = new UniversalSensorManagerStub(this);
 		connectRemote();
 	}
 	
@@ -55,7 +57,11 @@ public class UniversalSensorManager {
 	
 	public boolean registerListener(UniversalEventListener mlistener, //UniversalSensor sensor, 
 			String devID, int sType, int rateUs) {
-		remoteConnection.registerListener(new UniversalSensorManagerStub(mlistener), "asd", 1, 1);
+		if (mstub == null) {
+			Log.i(tag, "mstub is null " + devID);
+			return false;
+		}
+		remoteConnection.registerListener(mstub, devID, 1, 1);
 		return true;
 	}
 	
@@ -66,6 +72,11 @@ public class UniversalSensorManager {
 		context.bindService(intent, remoteConnection, Context.BIND_AUTO_CREATE);
 	}
 	
+	public void setRate(int rate)
+	{
+		remoteConnection.setRate(rate);
+	}
+	
 //	public UniversalSensor getDefaultSensor(int sType)
 //	{
 //		
@@ -73,14 +84,15 @@ public class UniversalSensorManager {
 	
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
-		UniversalSensorManagerStub(UniversalEventListener mlistener)
+		UniversalSensorManager mManager = null;
+		UniversalSensorManagerStub(UniversalSensorManager mManager)
 		{
-			this.mlistener = mlistener;
+			this.mManager = mManager;
 		}
+
 		@Override
 		public void onSensorChanged(SensorParcel event) throws RemoteException {
 			Log.i(tag, "Event received:" + event.values[0]);
 		}
-
 	}
 }
