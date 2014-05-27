@@ -18,6 +18,7 @@ import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalEventListener;
 import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorEvent;
+import com.ucla.nesl.lib.UniversalSensorNameMap;
 
 public class UniversalSensorManager {
 	private String UNIVERSALServicePackage = "com.ucla.nesl.universalsensorservice";
@@ -79,11 +80,6 @@ public class UniversalSensorManager {
 		context.bindService(intent, remoteConnection, Context.BIND_AUTO_CREATE);
 	}
 	
-	public void setRate(int rate)
-	{
-		remoteConnection.setRate(rate);
-	}
-	
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
 		UniversalSensorManager mManager = null;
@@ -106,6 +102,12 @@ public class UniversalSensorManager {
 				mlistener.onSensorChanged(new UniversalSensorEvent(event));
 				i = 0;
 			}
+		}
+
+		@Override
+		public void notify(String devID, int sType, int action)
+				throws RemoteException {
+			Log.i(tag, "device: " + devID + ", sensorType:" + UniversalSensorNameMap.getName(sType) + ", action: " + action);
 		}
 	}
 }

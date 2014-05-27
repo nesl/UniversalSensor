@@ -1,6 +1,8 @@
 package com.ucla.nesl.universalservice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.os.RemoteException;
 import android.util.Log;
@@ -11,47 +13,75 @@ public class UniversalServiceSensor {
 	private static String tag = UniversalServiceSensor.class.getCanonicalName();
 	private String devID;
 	public  int sType;
-	private int cnt = 0;
-	private ArrayList<UniversalServiceListener> registeredlisteners;
-	
-	public UniversalServiceSensor(String devID, int sType)
+	public  String key;
+	private ArrayList<UniversalServiceListener> listenersList;
+	private Map<UniversalServiceListener, Integer> listenerSensorRate = new HashMap<UniversalServiceListener, Integer>();
+		
+	public UniversalServiceSensor(String devID, int sType, String key)
 	{
 		this.devID = new String(devID);
 		this.sType = sType;
-		registeredlisteners = new ArrayList<UniversalServiceListener>();
+		this.key   = new String(key);
+		listenersList = new ArrayList<UniversalServiceListener>();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public ArrayList<UniversalServiceListener> getSensorList()
 	{
-		return registeredlisteners;
+		synchronized (listenersList) {
+			return (ArrayList<UniversalServiceListener>)listenersList.clone();
+		}
 	}
 	
 	// This function is called by the listener to add itself into the
 	// list of registeredListener of this sensor type
-	public void registerListener(UniversalServiceListener mlistener)
+	public void linkListener(UniversalServiceListener mlistener, int rate)
 	{
-		if (!registeredlisteners.contains(mlistener))
-			registeredlisteners.add(mlistener);
+		synchronized (listenersList) {
+			if (!listenersList.contains(mlistener)) {
+				listenersList.add(mlistener);
+				(listenerSensorRate).put(mlistener, rate);
+			}
+		}
 	}
 
 	// This function is called by the listener to remove itself from the
 	// list of registeredListener of this sensor type
-	public void unregisterListner(UniversalServiceListener mlistener)
+	public void unlinkListner(UniversalServiceListener mlistener)
 	{
-		if (registeredlisteners.contains(mlistener))
-			registeredlisteners.remove(mlistener);
+		synchronized (listenersList) {
+			if (listenersList.contains(mlistener)) {
+				listenersList.remove(mlistener);
+				listenerSensorRate.remove(mlistener);
+			}
+		}
 	}
 	
+	public int getNextRate()
+	{
+		int max = 0;
+		synchronized (listenersList) {
+			for(Map.Entry<UniversalServiceListener, Integer> entry : listenerSensorRate.entrySet()) {
+				if (max < entry.getValue())
+					max = entry.getValue();
+			}
+		}
+		return max;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public void onSensorChanged(SensorParcel event)
 	{
+		ArrayList<UniversalServiceListener> lList;
+
+		synchronized (listenersList) {
+			lList = (ArrayList<UniversalServiceListener>)listenersList.clone();
+			listenersList.clear();
+		}
+
 		// Go through the list of listeners and send the data to them
-		for (UniversalServiceListener mlistener: registeredlisteners)
+		for (UniversalServiceListener mlistener: lList)
 		{
-			cnt++;
-			if(cnt == 50) {
-				Log.i(tag, "onSensorChanged");
-				cnt = 0;
-			}
 			try {
 				mlistener.getListener().onSensorChanged(event);
 			} catch(RemoteException e){}
@@ -60,27 +90,34 @@ public class UniversalServiceSensor {
 	
 	public boolean isEmpty()
 	{
-		return registeredlisteners.isEmpty();
+		synchronized (listenersList) {
+			return listenersList.isEmpty();
+		}
 	}
 	
 	public String getDevID()
 	{
 		return devID;
 	}
-	
+
 	// This is called when the driver notifies the service
 	// that a particular type of sensor is no more available
 	// This can happen when the mobile phone goes out of range
-	public boolean unregister(String key)
+	@SuppressWarnings("unchecked")
+	synchronized public boolean unregister()
 	{
-		for(UniversalServiceListener mlistener : registeredlisteners)
-		{
-			// Notify the listener about the sensor being disabled
-			mlistener.unregisterSensor(key);			
+		ArrayList<UniversalServiceListener> lList;
+
+		synchronized (listenersList) {
+			lList = (ArrayList<UniversalServiceListener>)listenersList.clone();
+			listenersList.clear();
 		}
 
-		// remove the listener entry from its list
-		registeredlisteners.clear();
+		for(UniversalServiceListener mlistener : lList)
+		{
+			// Notify the listener about the sensor being disabled
+			mlistener.unlinkSensor(key);			
+		}
 
 		return true;
 	}

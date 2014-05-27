@@ -20,19 +20,29 @@ public class UniversalServiceDevice extends Device {
 		this.mDriverStub = mDriverStub;
 	}
 	
-	public void addSensor(UniversalServiceSensor msensor)
+	synchronized public void addSensor(UniversalServiceSensor msensor)
 	{
 		sensorList.add(msensor);
+		super.addSensor(msensor.sType);
 	}
 	
-	public void removeSensor(UniversalServiceSensor msensor)
+	synchronized public void removeSensor(UniversalServiceSensor msensor)
 	{
+		super.removeSensor(msensor.sType);
 		if(sensorList.contains(msensor))
 			sensorList.remove(sensorList.indexOf(msensor));
 	}
-	
-	public void onDestroy()
+
+	synchronized public void onDestroy()
 	{
-		// sensorlist always should be empty
+		for(UniversalServiceSensor msensor:sensorList)
+		{
+			msensor.unregister();
+		}
+	}
+	
+	synchronized public boolean isEmpty()
+	{
+		return sensorList.isEmpty();
 	}
 }

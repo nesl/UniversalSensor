@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalManagerService;
@@ -37,24 +38,14 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 		} catch(RemoteException e) {}
 	}
 
-	public boolean registerDriver(UniversalDriverManagerStub mDriver, Device device) throws RemoteException
+	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub, int sType) throws RemoteException
 	{
-		return service.registerDriver(mDriver, device);
+		return service.registerDriver(device, mDriverManagerStub, sType);
 	}
 
-	public boolean unregisterDriver(String devID) throws RemoteException
+	public boolean unregisterDriver(String devID, int sType) throws RemoteException
 	{
-		return service.unregisterDriver(devID);
-	}
-	
-	public boolean addSensor(String devID, int sType) throws RemoteException
-	{
-		return service.addDriverSensor(devID, sType);
-	}
-	
-	void removeSensor(String devID, int sType) throws RemoteException
-	{
-		service.removeDriverSensor(devID, sType);
+		return service.unregisterDriver(devID, sType);
 	}
 }
 

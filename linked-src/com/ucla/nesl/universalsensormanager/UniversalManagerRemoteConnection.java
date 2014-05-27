@@ -30,13 +30,6 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 	public void onServiceDisconnected(ComponentName name) {
 	}
 	
-	public void setRate(int rate)
-	{
-		try {
-			service.setRate(rate);
-		} catch(RemoteException e){}
-	}
-	
 	public ArrayList<Device> listDevices() throws RemoteException
 	{
 		if (service == null) {

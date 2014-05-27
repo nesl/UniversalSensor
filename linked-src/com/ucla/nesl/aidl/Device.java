@@ -9,12 +9,18 @@ import android.os.Parcelable;
 public class Device implements Parcelable{
 	private String devID;
 	private String vendorID;
-	private ArrayList<Integer> sensorList;
+	private ArrayList<Integer> sensorList = new ArrayList<Integer>();
 
 	public Device()
 	{
 		devID = "";
 		vendorID = null;
+	}
+
+	public Device(String vendorID)
+	{
+		this.devID = "";
+		this.vendorID = new String(vendorID);
 	}
 
 	public Device(Device device)
@@ -51,7 +57,7 @@ public class Device implements Parcelable{
 		this.vendorID = vendorID;
 	}
 	
-	public boolean addSensor(int sType)
+	synchronized public boolean addSensor(int sType)
 	{
 		Integer tmp = new Integer(sType);
 		if (sensorList.indexOf(tmp) >= 0)
@@ -67,7 +73,7 @@ public class Device implements Parcelable{
 		return true;
 	}
 
-	public boolean removeSensor(int sType)
+	synchronized public boolean removeSensor(int sType)
 	{
 		Integer tmp = new Integer(sType);
 		int index = sensorList.indexOf(tmp);
@@ -78,12 +84,12 @@ public class Device implements Parcelable{
 			return false;
 	}
 
-	public ArrayList<Integer> getSensorList()
+	synchronized public ArrayList<Integer> getSensorList()
 	{
 		return sensorList;
 	}
 	
-	public boolean isEmpty()
+	synchronized public boolean isEmpty()
 	{
 		return sensorList.isEmpty();
 	}

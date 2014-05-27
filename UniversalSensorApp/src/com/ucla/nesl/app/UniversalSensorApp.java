@@ -23,45 +23,45 @@ import com.ucla.nesl.lib.UniversalSensorNameMap;
 import com.ucla.nesl.universalsensormanager.UniversalSensorManager;
 
 public class UniversalSensorApp extends Activity implements UniversalEventListener {
-    private Button disconnectButton;
-    private Button queryButton;
-    private Button unregisterSensorButton;
+    private Button listDevices;
+    private Button register;
+    private Button unregister;
+    private Button registerDriver;
+    private Button unregisterDriver;
     private EditText sTypeText;
-    private TextView messageTextView;
     private String tag = UniversalSensorApp.class.getCanonicalName();
-    private UniversalSensorManager mManager, mManager2;    
+    private UniversalSensorManager mManager;    
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
 	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
 	private UniversalSensor msensor;
-	private Device di;
+	private ArrayList<Device> dlist;
+	Device device;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        disconnectButton = (Button)findViewById(R.id.startDriver);
-        queryButton = (Button)findViewById(R.id.queryButton);
-        unregisterSensorButton = (Button)findViewById(R.id.setsensor);
-        sTypeText = (EditText)findViewById(R.id.sType);
-        messageTextView = (TextView)findViewById(R.id.messageTextView);
+        listDevices = (Button)findViewById(R.id.listDevices);
+        register = (Button)findViewById(R.id.register);
+        unregister = (Button)findViewById(R.id.unregister);
+        registerDriver = (Button)findViewById(R.id.registerDriver);
+        unregisterDriver = (Button)findViewById(R.id.unregisterDriver);
         mManager = UniversalSensorManager.create(getApplicationContext());
-        mManager2 = UniversalSensorManager.create(getApplicationContext());
         
-        disconnectButton.setOnClickListener(new OnClickListener() {
+        register.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-            	Log.i(tag, "starting driver service");
-        		Intent intent = new Intent("bindUniversalDriverService");
-        		intent.setClassName(UNIVERSALDriverPackage, UNIVERSALDriverClass);
-        		startService(intent);
+            	Log.i(tag, "registering Devices");
+            	device = mManager.listDevices().get(0);
+                registerListener(device.getDevID(), device.getSensorList().get(0), 1);
             }
         });
-        
-        queryButton.setOnClickListener(new OnClickListener() {
+
+        listDevices.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-            	ArrayList<Device> d = mManager.listDevices();
-            	Log.i(tag, "listing devices " + d.size());
+            	dlist = mManager.listDevices();
+            	Log.i(tag, "listing devices " + dlist.size());
 
             	for (Device device:mManager.listDevices())
             	{
@@ -69,20 +69,34 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             		for (int i : device.getSensorList())
             			Log.i(tag, UniversalSensorNameMap.getName(i));
             	}
-            	di = mManager.listDevices().get(0);
-
-                registerListener(di.getDevID(), di.getSensorList().get(0), 1);
             }
         });
         
-        unregisterSensorButton.setOnClickListener(new OnClickListener() {
+        unregister.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
-				unregisterListener(di.getDevID(), di.getSensorList().get(0));
+				unregisterListener(device.getDevID(), device.getSensorList().get(0));
 			}
 		});
-    }
+
+        registerDriver.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+        		Intent intent = new Intent("bindUniversalDriverService");
+        		intent.setClassName(UNIVERSALDriverPackage, UNIVERSALDriverClass);
+        		startService(intent);
+			}
+		});
+
+	    unregisterDriver.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+			}
+		});
+	}
 
     private void registerListener(String devID, int sType, int rate)
     {
@@ -112,7 +126,5 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 	@Override
 	public void onAccuracyChanged(UniversalSensor sensor, int accuracy) {
-		// TODO Auto-generated method stub
-		
 	}
 }

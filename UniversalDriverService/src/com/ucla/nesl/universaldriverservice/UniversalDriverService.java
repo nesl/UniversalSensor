@@ -43,6 +43,9 @@ public class UniversalDriverService extends Service implements SensorEventListen
 
         handler = new Handler();
         handler.postDelayed(r, 1000);
+        
+        Handler h2 = new Handler();
+        h2.postDelayed(r1, 20000);
     }
 
 	void register()
@@ -50,9 +53,15 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		// Exposing accelerometer for now. You can expose all the sensors.
 		// Only the exposed sensors will be visible to the applications
 		ArrayList<Integer> sensorList = new ArrayList<Integer>();
-		sensorList.add(new Integer(UniversalSensor.TYPE_ACCELEROMETER));
-		sensorList.add(new Integer(UniversalSensor.TYPE_LIGHT));
-        mdriverManager1.registerDriver(this, sensorList);
+		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_ACCELEROMETER));
+		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_LIGHT));
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER);
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT);
+	}
+
+	void unregister()
+	{
+		mdriverManager1.unregisterDriver(this, UniversalSensor.TYPE_ALL);
 	}
 
     private Runnable r = new Runnable() {
@@ -63,6 +72,15 @@ public class UniversalDriverService extends Service implements SensorEventListen
 				register();
 			}
 			once = false;
+		}
+	};
+
+    private Runnable r1 = new Runnable() {
+		@Override
+		public void run() {
+
+				Log.i(tag, "unregistering");
+				unregister();
 		}
 	};
 
@@ -87,25 +105,10 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	}
 
 	@Override
-	public void setRate(int rate) {
-		// Use the rate that the UniversalService tells us to use
-		// To begin with we will operate at the standard rate for this sensor
-		this.rate = rate;
+	public void setRate(int sType, int rate) {
+		// TODO Auto-generated method stub
+		
 	}
 
-	@Override
-	public void activateSensor(int sType) {
-		// register for the sensor data only when some application
-		// needs the data. Else disable it.
-		Log.i(tag, "received enable from the service");
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(sType), rate);
-	}
 
-	@Override
-	public void deactivateSensor(int sType) {
-		// No application has registered for this sensor, so 
-		// its better to disable it to save battery
-		mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sType));
-		Log.i(tag, "received disable from the service");
-	}
 }
