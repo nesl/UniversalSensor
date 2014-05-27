@@ -76,7 +76,6 @@ public class UniversalServiceSensor {
 
 		synchronized (listenersList) {
 			lList = (ArrayList<UniversalServiceListener>)listenersList.clone();
-			listenersList.clear();
 		}
 
 		// Go through the list of listeners and send the data to them
@@ -84,6 +83,7 @@ public class UniversalServiceSensor {
 		{
 			try {
 				mlistener.getListener().onSensorChanged(event);
+				Log.i(tag, "sending data to " + mlistener.callingPid);
 			} catch(RemoteException e){}
 		}
 	}

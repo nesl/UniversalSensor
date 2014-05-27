@@ -77,8 +77,10 @@ public class UniversalDriverManager {
 		}
 
 		// Check if sensor is already registered
-		if (device.addSensor(sType) == false)
+		if (device.addSensor(sType) == false) {
+			Log.i(tag, "sType " + sType + " already registered");
 			return false;
+		}
 		
 		if (mDriverManagerStub == null)
 			mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);

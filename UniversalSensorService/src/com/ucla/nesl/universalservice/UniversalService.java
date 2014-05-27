@@ -180,6 +180,10 @@ public class UniversalService extends Service {
 			if (addDriverSensor(mUniversalDevice.getDevID(), sType) == false) {
 				return false;
 			}
+			Log.i(tag, "list of registered sensors");
+			for(Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet())
+				Log.i("tag", "as " + entry.getKey());
+
 			return true;
 		}
 
@@ -327,10 +331,13 @@ public class UniversalService extends Service {
 			UniversalServiceSensor msensor = getRegisteredSensor(key);
 			if(msensor == null) {
 				Log.i(tag, "msensor is null " + key);
+				for(Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet())
+					Log.i("tag", "as " + entry.getKey());
 				// may be through exception, for now just returning
 				return;
 			}
 
+			Log.i(tag, "event received");
 			msensor.onSensorChanged(event);
 			return;
 		}

@@ -3,6 +3,7 @@ package com.ucla.nesl.aidl;
 import java.util.ArrayList;
 
 import android.R.integer;
+import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -75,6 +76,10 @@ public class Device implements Parcelable{
 
 	synchronized public boolean removeSensor(int sType)
 	{
+		if (sType == Sensor.TYPE_ALL) {
+			sensorList.clear();
+			return true;
+		}
 		Integer tmp = new Integer(sType);
 		int index = sensorList.indexOf(tmp);
 		if (index >= 0) {

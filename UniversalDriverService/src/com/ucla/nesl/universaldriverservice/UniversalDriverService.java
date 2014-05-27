@@ -20,12 +20,12 @@ import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 public class UniversalDriverService extends Service implements SensorEventListener, UniversalDriverListener {
 	private static String tag = UniversalDriverService.class.getCanonicalName();
 	private static Boolean flag = false;
-	Handler handler;
+	Handler handler, h2;
 	SensorManager mSensorManager;
 	Sensor mSensor;
 	UniversalDriverManager mdriverManager1 = null, mdriverManager2 = null;
-	boolean once = true;
-	int rate = SensorManager.SENSOR_DELAY_NORMAL;
+	boolean registered = false;
+	int rate = 0;
 	
 	@Override
     public void onCreate() {
@@ -44,8 +44,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
         handler = new Handler();
         handler.postDelayed(r, 1000);
         
-        Handler h2 = new Handler();
-        h2.postDelayed(r1, 20000);
+        h2 = new Handler();
     }
 
 	void register()
@@ -57,21 +56,24 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_LIGHT));
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER);
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT);
+        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+        h2.postDelayed(r1, 20000);
+        registered = true;
 	}
 
 	void unregister()
 	{
 		mdriverManager1.unregisterDriver(this, UniversalSensor.TYPE_ALL);
+		handler.postDelayed(r, 10000);
+		registered = false;
+		rate = 0;
 	}
 
     private Runnable r = new Runnable() {
 		@Override
 		public void run() {
-			if (once) {
-				Log.i(tag, "registering");
-				register();
-			}
-			once = false;
+			Log.i(tag, "registering");
+			register();
 		}
 	};
 
@@ -101,13 +103,13 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	// this is android's SensorEventListener function
 	@Override
 	public void onSensorChanged(SensorEvent event) {
-		mdriverManager1.push(new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp));
+		if (rate > 0 && registered)
+			mdriverManager1.push(new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp));
 	}
 
 	@Override
 	public void setRate(int sType, int rate) {
-		// TODO Auto-generated method stub
-		
+		this.rate = rate;
 	}
 
 
