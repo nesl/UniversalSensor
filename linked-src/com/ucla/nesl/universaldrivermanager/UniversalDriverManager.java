@@ -1,7 +1,5 @@
 package com.ucla.nesl.universaldrivermanager;
 
-import java.util.ArrayList;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
@@ -9,7 +7,6 @@ import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
-import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensorEvent;
 

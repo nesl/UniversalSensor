@@ -5,14 +5,11 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.app.universalsensorapp.R;
@@ -28,12 +25,10 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     private Button unregister;
     private Button registerDriver;
     private Button unregisterDriver;
-    private EditText sTypeText;
     private String tag = UniversalSensorApp.class.getCanonicalName();
     private UniversalSensorManager mManager;    
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
 	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
-	private UniversalSensor msensor;
 	private ArrayList<Device> dlist;
 	Device device;
 	
@@ -69,6 +64,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             		for (int i : device.getSensorList())
             			Log.i(tag, UniversalSensorNameMap.getName(i));
             	}
+            	registerNotification();
             }
         });
         
@@ -98,6 +94,11 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 		});
 	}
 
+    void registerNotification()
+    {
+    	mManager.registerNotification(this);
+    }
+    
     private void registerListener(String devID, int sType, int rate)
     {
     	mManager.registerListener(this, devID, sType, rate);

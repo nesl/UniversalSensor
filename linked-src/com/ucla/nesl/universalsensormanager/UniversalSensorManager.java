@@ -2,23 +2,16 @@ package com.ucla.nesl.universalsensormanager;
 
 import java.util.ArrayList;
 
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
-import com.ucla.nesl.aidl.IUniversalManagerService;
-import com.ucla.nesl.aidl.IUniversalManagerService.Stub;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalEventListener;
-import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorEvent;
-import com.ucla.nesl.lib.UniversalSensorNameMap;
 
 public class UniversalSensorManager {
 	private String UNIVERSALServicePackage = "com.ucla.nesl.universalsensorservice";
@@ -80,6 +73,11 @@ public class UniversalSensorManager {
 		context.bindService(intent, remoteConnection, Context.BIND_AUTO_CREATE);
 	}
 	
+	public void registerNotification(UniversalEventListener mlistener)
+	{
+		remoteConnection.registerNotification(mstub);
+	}
+	
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
 		UniversalSensorManager mManager = null;
@@ -105,9 +103,15 @@ public class UniversalSensorManager {
 		}
 
 		@Override
-		public void notify(String devID, int sType, int action)
+		public void notifyDeviceChange(Device mdevice) throws RemoteException {
+			Log.i(tag, "new device available " + mdevice.getDevID() + ", sensorList: " + mdevice.getSensorList());
+		}
+
+		@Override
+		public void notifySensorChanged(String devID, int sType, int action)
 				throws RemoteException {
-			Log.i(tag, "device: " + devID + ", sensorType:" + UniversalSensorNameMap.getName(sType) + ", action: " + action);
+			// TODO Auto-generated method stub
+			
 		}
 	}
 }

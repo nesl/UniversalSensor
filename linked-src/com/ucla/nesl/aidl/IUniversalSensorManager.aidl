@@ -4,5 +4,6 @@ import com.ucla.nesl.aidl.SensorParcel;
 
 interface IUniversalSensorManager {
 	void onSensorChanged(in SensorParcel event);
-	void notify(String devID, int sType, int action);
+	void notifyDeviceChange(in Device mdevice);
+	void notifySensorChanged(String devID, int sType, int action);
 }

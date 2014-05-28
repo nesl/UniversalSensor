@@ -38,8 +38,9 @@ public class UniversalServiceListener {
 		synchronized (sensorsList) {
 			mSensor = sensorsList.remove(sensorID);
 		}
+
 		try {
-			mlistener.notify(mSensor.getDevID(), mSensor.sType, UniversalConstants.ACTION_UNREGISTER);
+			mlistener.notifySensorChanged(mSensor.getDevID(), mSensor.sType, UniversalConstants.ACTION_UNREGISTER);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}

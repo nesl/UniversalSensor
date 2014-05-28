@@ -39,6 +39,7 @@ public class UniversalService extends Service {
     	Map<String, UniversalServiceDevice> registeredDevices = new HashMap<String, UniversalServiceDevice>();
     	Map<String, UniversalServiceSensor> registeredSensors = new HashMap<String, UniversalServiceSensor>();
     	HashMap<String, UniversalServiceListener> registeredListeners = new HashMap<String, UniversalServiceListener>();
+    	HashMap<String, UniversalServiceListener> registeredNotifiers = new HashMap<String, UniversalServiceListener>();
 
     	public UniversalManagerService(UniversalService parent) {
     		this.parent = parent;
@@ -53,6 +54,42 @@ public class UniversalService extends Service {
     	{
     		return "" + pid;
     	}
+
+    	public boolean addListenerToNotificationList(String key, UniversalServiceListener mlistener)
+    	{
+    		synchronized (registeredNotifiers) {
+    			if(!registeredNotifiers.containsKey(key)) {
+    				Log.i(tag, "registering listener for notification");
+    				registeredNotifiers.put(key, mlistener);
+    			}
+			}
+    		return true;
+    	}
+
+    	public boolean  notifyListeners(Device mdevice)
+    	{
+    		Log.i(tag, "notify for new device");
+    		synchronized (registeredNotifiers) {
+				for (Map.Entry<String, UniversalServiceListener> entry : registeredNotifiers.entrySet()) {
+					try {
+						Log.i(tag, "sending notification to " + entry.getKey());
+						entry.getValue().getListener().notifyDeviceChange(mdevice);
+					} catch(RemoteException e) {return false;}
+				}
+    		}
+    		return true;
+    	}
+
+//    	public boolean removeListenerFromNotificationList(UniversalServiceListener mlistener)
+//    	{
+//    		synchronized (notificationList) {
+//    			if (notificationList.contains(mlistener)) {
+//    				notificationList.remove(mlistener);
+//    				return true;
+//    			} else
+//    				return false;
+//			}
+//    	}
 
     	public boolean addRegisteredDevice(String devID, UniversalServiceDevice mdevice)
     	{
@@ -184,6 +221,7 @@ public class UniversalService extends Service {
 			for(Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet())
 				Log.i("tag", "as " + entry.getKey());
 
+			notifyListeners(mdevice);
 			return true;
 		}
 
@@ -345,6 +383,16 @@ public class UniversalService extends Service {
 		@Override
 		public String getDevID() throws RemoteException {
 			return new String(""+Math.random());  //compute devID, for now using a random number
+		}
+
+		@Override
+		public void registerNotification(IUniversalSensorManager mManager)
+				throws RemoteException {
+			Log.i(tag, "adding listener to notification list");
+			String mlistenerKey = generateListenerKey(Binder.getCallingPid());
+			UniversalServiceListener mlistener = new UniversalServiceListener(mManager, Binder.getCallingPid());
+			addRegisteredListener(mlistenerKey, mlistener);
+			addListenerToNotificationList(mlistenerKey, mlistener);
 		}
     }
 }

@@ -53,4 +53,11 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			service.unregisterListener(devID, sType);
 		}catch(RemoteException e){}
 	}
+	
+	public void registerNotification(UniversalSensorManagerStub cb)
+	{
+		try {
+			service.registerNotification(cb);
+		} catch (RemoteException e) {}
+	}
 }
