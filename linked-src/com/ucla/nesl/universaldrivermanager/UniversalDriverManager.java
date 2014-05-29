@@ -20,7 +20,6 @@ public class UniversalDriverManager {
 	private Device device = null;
 	private String devID  = null;
 	private String vendorID = null;
-	private UniversalDriverListener listener = null;
 	UniversalDriverManagerStub mDriverManagerStub;
 
 	public static UniversalDriverManager create(Context context, String vendorID)

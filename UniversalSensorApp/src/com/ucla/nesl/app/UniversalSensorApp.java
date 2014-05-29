@@ -25,6 +25,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     private Button unregister;
     private Button registerDriver;
     private Button unregisterDriver;
+    private Button startZephyr;
     private String tag = UniversalSensorApp.class.getCanonicalName();
     private UniversalSensorManager mManager;    
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
@@ -41,6 +42,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         unregister = (Button)findViewById(R.id.unregister);
         registerDriver = (Button)findViewById(R.id.registerDriver);
         unregisterDriver = (Button)findViewById(R.id.unregisterDriver);
+        startZephyr = (Button)findViewById(R.id.startZephyr);
         mManager = UniversalSensorManager.create(getApplicationContext());
         
         register.setOnClickListener(new OnClickListener() {
@@ -87,9 +89,22 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 		});
 
 	    unregisterDriver.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+	    });
+	    startZephyr.setOnClickListener(new OnClickListener() {
 			
 			@Override
 			public void onClick(View arg0) {
+				Log.i("afd", "calling broadcast");
+				Intent intent = new Intent();
+				intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+				intent.setAction("ZephyrDriverBroadcastReceiver");
+				sendBroadcast(intent);
 			}
 		});
 	}
