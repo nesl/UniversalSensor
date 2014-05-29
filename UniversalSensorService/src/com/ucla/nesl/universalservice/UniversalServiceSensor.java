@@ -83,7 +83,6 @@ public class UniversalServiceSensor {
 		{
 			try {
 				mlistener.getListener().onSensorChanged(event);
-				Log.i(tag, "sending data to " + mlistener.callingPid);
 			} catch(RemoteException e){}
 		}
 	}

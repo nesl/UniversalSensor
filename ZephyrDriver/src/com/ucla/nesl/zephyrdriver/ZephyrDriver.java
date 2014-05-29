@@ -12,17 +12,22 @@ import java.util.UUID;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.res.Resources.Theme;
 import android.os.PowerManager;
-import android.os.RemoteException;
 import android.util.Log;
 
+import com.ucla.nesl.lib.UniversalDriverListener;
+import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorEvent;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 
-public class ZephyrDriver implements Runnable {
+public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	private static String TAG = ZephyrDriver.class.getCanonicalName();
 	String bluetoothAddr = null;
-	private PowerManager.WakeLock mWakeLock; 
+	private PowerManager.WakeLock mWakeLock;
+	private UniversalDriverManager mDriverManager;
+	private Context context;
 
 	private static final int RETRY_INTERVAL = 5000; // ms
 	private static final int LIFE_SIGN_SEND_INTERVAL = 8000; //ms
@@ -60,7 +65,6 @@ public class ZephyrDriver implements Runnable {
 
 	//private byte SET_RTC_PACKET[];
 
-	private UniversalDriverManager mdriverManager;
 //	private FlowEngineAPI mAPI;
 	private int	mDeviceID;
 //	private ZephyrDeviceService mThisService = this;
@@ -92,8 +96,9 @@ public class ZephyrDriver implements Runnable {
 	int[] ecgData = new int[63];
 	int[] accData = new int[60];
 	
-	public ZephyrDriver(String bluetoothAddr)
+	public ZephyrDriver(Context context, String bluetoothAddr)
 	{
+		this.context = context;
 		this.bluetoothAddr = new String(bluetoothAddr);
 //		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 //		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
@@ -225,6 +230,7 @@ public class ZephyrDriver implements Runnable {
 		long lastTime = System.currentTimeMillis();
 		byte[] receivedBytes = new byte[128];
 
+		Log.i(TAG, "attachZephyr");
 		while (!mIsStopRequest) {
 			try {					
 				// Receiving STX
@@ -348,11 +354,12 @@ public class ZephyrDriver implements Runnable {
 						accSample[1] = (float) convertADCtoG(accData[i+1]);
 						accSample[2] = (float) convertADCtoG(accData[i+2]);
 
-						Log.i(TAG, "acc data " + accSample[0] + ", " + accSample[1] + ", " + accSample[2]);
+
 						// sample interval: 20ms
 						if (mIsAccelerometer) {
+//							Log.i(TAG, "acc data " + accSample[0] + ", " + accSample[1] + ", " + accSample[2]);
 							//mAPI.pushDoubleArray(mDeviceID, SensorType.CHEST_ACCELEROMETER, accSample, accSample.length, timestamp + (j * 20));
-//							mdriverManager.push(new UniversalSensorEvent(SensorType.CHEST_ACCELEROMETER, accSample, timestamp + (j * 20)));
+							mDriverManager.push(new UniversalSensorEvent(UniversalSensor.TYPE_CHEST_ACCELEROMETER, accSample, timestamp + (j * 20)));
 						}
 					}
 				} else if (msgID == 0x23 ) {
@@ -417,8 +424,20 @@ public class ZephyrDriver implements Runnable {
 	@Override
 	public void run() {
 		Log.i(TAG, "Zephyr Driver thread started " + bluetoothAddr);
-		mIsAccelerometer = true;
 		tryToConnect();
+		mDriverManager = UniversalDriverManager.create(context, "Zephyr-" + bluetoothAddr);
+		try {
+			Thread.sleep(1500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_CHEST_ACCELEROMETER);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ECG);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_RIP);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_SKIN_TEMPERATURE);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BATTERY);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN);
 		attachZephyr();
 	}
 	
@@ -485,6 +504,32 @@ public class ZephyrDriver implements Runnable {
 		}
 	}
 
+	private void sendStopECGPacket() {
+		//Log.d(TAG, "sendStopECGPacket()");
+		if (mOutputStream != null) {
+			try {
+				mOutputStream.write(STOP_ECG_PACKET);
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void sendStopRIPPacket() {
+		//Log.d(TAG, "sendStopRIPPacket()");
+		if (mOutputStream != null) {
+			try {
+				mOutputStream.write(STOP_RIP_PACKET);
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	private void sendStartAccPacket() {
 		if (mOutputStream != null) {
 			try {
@@ -503,6 +548,34 @@ public class ZephyrDriver implements Runnable {
 				mOutputStream.write(STOP_ECG_PACKET);
 				mOutputStream.write(STOP_RIP_PACKET);
 				mOutputStream.write(STOP_ACCELEROMETER_PACKET);
+				mOutputStream.write(STOP_GENERAL_PACKET);
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void sendStopAccPacket() {
+		if (mOutputStream != null) {
+			try {
+				mOutputStream.write(STOP_ACCELEROMETER_PACKET);
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private boolean isAllSensorExceptAccUnflagged() {
+		return !mIsECG && !mIsRIP && !mIsSkinTemp && !mIsBattery && !mIsButtonWorn;
+	}
+	
+	private void sendStopGeneralPacket() {
+		if (mOutputStream != null) {
+			try {
 				mOutputStream.write(STOP_GENERAL_PACKET);
 			} 
 			catch (IOException e)
@@ -554,5 +627,81 @@ public class ZephyrDriver implements Runnable {
 	private double convertADCtoG(int sample) {
 		// 10bits ADC 0 ~ 1023 = -16g ~ 16g
 		return (sample / 1023.0) * 32.0 - 16.0;
+	}
+
+	private void handleStopSensor(int sensorId) {
+		switch (sensorId) {
+		case UniversalSensor.TYPE_ECG:
+			mIsECG = false;
+			sendStopECGPacket();
+			break;
+		case UniversalSensor.TYPE_RIP:
+			mIsRIP = false;
+			sendStopRIPPacket();
+			break;
+		case UniversalSensor.TYPE_CHEST_ACCELEROMETER:
+			mIsAccelerometer = false;
+			sendStopAccPacket();
+			break;
+		case UniversalSensor.TYPE_SKIN_TEMPERATURE:
+			mIsSkinTemp = false;
+			break;
+		case UniversalSensor.TYPE_ZEPHYR_BATTERY:
+			mIsBattery = false;
+			break;
+		case UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN:
+			mIsButtonWorn = false;
+			break;
+		}
+		if (isAllSensorExceptAccUnflagged()) {
+			sendStopGeneralPacket();
+		}
+//		if (isAllSensorUnflagged()) {
+//			stopReceiveThread();
+//		}
+	}
+	
+	private void handleStartSensor(int sensorId) {
+		if (true) { //tryToConnect()) {
+			switch (sensorId) {
+			case UniversalSensor.TYPE_ECG:
+				mIsECG = true;
+				sendStartGeneralPacket();
+				//sendStartECGPacket();
+				break;
+			case UniversalSensor.TYPE_RIP:
+				mIsRIP = true;
+				sendStartGeneralPacket();
+				//sendStartRIPPacket();
+				break;
+			case UniversalSensor.TYPE_CHEST_ACCELEROMETER:
+				mIsAccelerometer = true;
+				Log.i(TAG, "setting TYPE_CHEST_ACCELEROMETER");
+				sendStartAccPacket();
+				break;
+			case UniversalSensor.TYPE_SKIN_TEMPERATURE:
+				mIsSkinTemp = true;
+				break;
+			case UniversalSensor.TYPE_ZEPHYR_BATTERY:
+				mIsBattery = true;
+				break;
+			case UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN:
+				mIsButtonWorn = true;
+				break;
+			}
+			if (mIsSkinTemp || mIsBattery || mIsButtonWorn) {
+				sendStartGeneralPacket();
+			}
+		}
+	}
+	
+	@Override
+	public void setRate(int sType, int rate) {
+		Log.i(TAG, "setting rate " + sType + ": " + rate);
+		if (rate > 0) {
+			handleStartSensor(sType);
+		} else {
+			handleStopSensor(sType);
+		}
 	}
 }

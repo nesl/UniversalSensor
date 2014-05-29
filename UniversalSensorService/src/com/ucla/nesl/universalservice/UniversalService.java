@@ -297,7 +297,7 @@ public class UniversalService extends Service {
 			int listenerPid     = Binder.getCallingPid();
 			String mlistenerKey = generateListenerKey(listenerPid);
 
-			Log.i(tag, "registering listener " +  Binder.getCallingPid());
+			Log.i(tag, "registering listener " +  Binder.getCallingPid() + ", " + sType + "," + msensorKey);
 
 			if (getRegisteredSensor(msensorKey) == null) {
 				// a null here means that the app wants to register to a sensor that
@@ -375,7 +375,6 @@ public class UniversalService extends Service {
 				return;
 			}
 
-			Log.i(tag, "event received");
 			msensor.onSensorChanged(event);
 			return;
 		}

@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.app.universalsensorapp.R;
@@ -26,6 +27,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     private Button registerDriver;
     private Button unregisterDriver;
     private Button startZephyr;
+    private EditText edittext;
     private String tag = UniversalSensorApp.class.getCanonicalName();
     private UniversalSensorManager mManager;    
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
@@ -42,15 +44,27 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         unregister = (Button)findViewById(R.id.unregister);
         registerDriver = (Button)findViewById(R.id.registerDriver);
         unregisterDriver = (Button)findViewById(R.id.unregisterDriver);
+        edittext = (EditText)findViewById(R.id.edittext);
         startZephyr = (Button)findViewById(R.id.startZephyr);
         mManager = UniversalSensorManager.create(getApplicationContext());
         
         register.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-            	Log.i(tag, "registering Devices");
-            	device = mManager.listDevices().get(0);
-                registerListener(device.getDevID(), device.getSensorList().get(0), 1);
+            	String value  = edittext.getText().toString();
+            	if (value.isEmpty()) {
+            		Log.i(tag, "Please enter the device number and sensor type");
+            		return;
+            	}
+
+            	dlist = mManager.listDevices();
+            	int devNum = Integer.valueOf(value.split(":")[0]);
+            	int sType = Integer.valueOf(value.split(":")[1]);
+
+            	device = dlist.get(devNum);
+            	Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," +sType);
+
+                registerListener(device.getDevID(), sType, 1);
             }
         });
 
@@ -63,8 +77,10 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             	for (Device device:mManager.listDevices())
             	{
             		Log.i(tag, device.getVendorID() +":" + device.getDevID());
+
+
             		for (int i : device.getSensorList())
-            			Log.i(tag, UniversalSensorNameMap.getName(i));
+            			Log.i(tag, "" + i + ":" + UniversalSensorNameMap.getName(i));
             	}
             	registerNotification();
             }
@@ -74,7 +90,16 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 			
 			@Override
 			public void onClick(View arg0) {
-				unregisterListener(device.getDevID(), device.getSensorList().get(0));
+            	String value  = edittext.getText().toString();
+            	if (value.isEmpty()) {
+            		Log.i(tag, "Please enter the device number and sensor type");
+            		return;
+            	}
+            	dlist = mManager.listDevices();
+            	int devNum = Integer.valueOf(value.split(":")[0]);
+            	int sType = Integer.valueOf(value.split(":")[1]);
+            	device = dlist.get(devNum);
+				unregisterListener(device.getDevID(), sType);
 			}
 		});
 
@@ -100,11 +125,17 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 			
 			@Override
 			public void onClick(View arg0) {
-				Log.i("afd", "calling broadcast");
-				Intent intent = new Intent();
+				String bluetoothAddr = edittext.getText().toString();
+				Log.i(tag, "calling broadcast " + edittext.getText());
+				if (bluetoothAddr.isEmpty()) {
+					Log.i(tag, "bluetoothAddr is empty");
+					return;
+				}
+				Intent intent = new Intent("ZephyrDriverBroadcastReceiver");
 				intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-				intent.setAction("ZephyrDriverBroadcastReceiver");
-				sendBroadcast(intent);
+				intent.putExtra("bluetoothAddr", bluetoothAddr);
+//				intent.setAction("ZephyrDriverBroadcastReceiver");
+				startService(intent);
 			}
 		});
 	}

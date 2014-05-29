@@ -7,13 +7,29 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-public class Zephyr extends BroadcastReceiver  {
+public class Zephyr extends Service {
 	private static String tag = Zephyr.class.getCanonicalName();
 	Thread thread;
+	int val = 0;
+//	@Override
+//	public void onReceive(Context context, Intent intent) {
+//		Log.i(tag, "onReceive called");
+//		thread = new Thread(new ZephyrDriver(context, "C8:3E:99:0D:D4:90"));
+//		thread.start();
+//	}
+	
 	@Override
-	public void onReceive(Context context, Intent intent) {
-		Log.i(tag, "onReceive called");
-		thread = new Thread(new ZephyrDriver("C8:3E:99:0D:D4:90"));
+	public IBinder onBind(Intent arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		Log.i(tag, "onStartCommand called " + val + ", " + intent.getStringExtra("bluetoothAddr"));
+		val++;
+		thread = new Thread(new ZephyrDriver(getApplicationContext(), "C8:3E:99:0D:D4:90"));
 		thread.start();
+		return super.onStartCommand(intent,flags,startId);
 	}
 }

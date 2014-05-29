@@ -17,11 +17,11 @@
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        <receiver android:name="com.ucla.nesl.zephyrdriver.Zephyr" >
+        <service android:name="com.ucla.nesl.zephyrdriver.Zephyr" >
             <intent-filter>
                 <action android:name="ZephyrDriverBroadcastReceiver" />
             </intent-filter>
-        </receiver>
+        </service>
     </application>
 
 </manifest>

@@ -56,7 +56,7 @@ public class UniversalSensorManager {
 			return false;
 		}
 		mstub.registerListener(mlistener);
-		remoteConnection.registerListener(mstub, devID, 1, 1);
+		remoteConnection.registerListener(mstub, devID, sType, rateUs);
 		return true;
 	}
 	

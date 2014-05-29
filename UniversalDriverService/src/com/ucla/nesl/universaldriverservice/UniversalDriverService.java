@@ -57,7 +57,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER);
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-        h2.postDelayed(r1, 20000);
+//        h2.postDelayed(r1, 20000);
         registered = true;
 	}
 
