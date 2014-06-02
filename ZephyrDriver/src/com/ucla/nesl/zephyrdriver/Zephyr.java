@@ -26,9 +26,13 @@ public class Zephyr extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.i(tag, "onStartCommand called " + val + ", " + intent.getStringExtra("bluetoothAddr"));
+//		val = intent.getIntExtra("bluetoothAddr", 0);
+//		Log.i(tag, "onStartCommand called " + val);
 		val++;
-		thread = new Thread(new ZephyrDriver(getApplicationContext(), "C8:3E:99:0D:D4:90"));
+		if (val == 1)
+			thread = new Thread(new ZephyrDriver(getApplicationContext(), "C8:3E:99:0D:D4:90"));
+		if (val == 2)
+			thread = new Thread(new ZephyrDriver(getApplicationContext(), "C8:3E:99:0D:CE:E3"));
 		thread.start();
 		return super.onStartCommand(intent,flags,startId);
 	}

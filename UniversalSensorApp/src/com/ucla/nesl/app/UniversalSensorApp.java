@@ -168,7 +168,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	
 	@Override
 	public void onSensorChanged(UniversalSensorEvent event) {
-		Log.i(tag, "Event received: SensorType:" + UniversalSensorNameMap.getName(event.sType) + ", " + event.values[0] + ", " + event.timestamp);
+		Log.i(tag, "Event received: " + event.devID + "SensorType:" + UniversalSensorNameMap.getName(event.sType) + ", " + event.values[0] + ", " + event.timestamp);
 	}
 
 	@Override
