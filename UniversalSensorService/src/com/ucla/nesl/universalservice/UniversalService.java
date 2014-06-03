@@ -8,6 +8,7 @@ import java.util.Random;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.ucla.nesl.aidl.IUniversalDriverManager;
 import com.ucla.nesl.aidl.IUniversalManagerService;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;
 
 public class UniversalService extends Service {
@@ -68,13 +70,14 @@ public class UniversalService extends Service {
 
     	public boolean  notifyListeners(Device mdevice)
     	{
+    		Handler mhandler;
+    		
     		Log.i(tag, "notify for new device");
     		synchronized (registeredNotifiers) {
 				for (Map.Entry<String, UniversalServiceListener> entry : registeredNotifiers.entrySet()) {
-					try {
-						Log.i(tag, "sending notification to " + entry.getKey());
-						entry.getValue().getListener().notifyDeviceChange(mdevice);
-					} catch(RemoteException e) {return false;}
+					Log.i(tag, "sending notification to " + entry.getKey());
+					mhandler = entry.getValue().mhandler;
+					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_NotifyDeviceChanged, mdevice));
 				}
     		}
     		return true;
@@ -297,12 +300,12 @@ public class UniversalService extends Service {
 			int listenerPid     = Binder.getCallingPid();
 			String mlistenerKey = generateListenerKey(listenerPid);
 
-			Log.i(tag, "registering listener " +  Binder.getCallingPid() + ", " + sType + "," + msensorKey);
+			Log.i(tag, "registering listener " +  Binder.getCallingPid() + ", " + sType);
 
 			if (getRegisteredSensor(msensorKey) == null) {
 				// a null here means that the app wants to register to a sensor that
 				// doesn't exist.
-				Log.d(tag, "msensor is null");
+				Log.e(tag, "Incorrect sensor type, registering failed");
 				return false;
 			}
 			UniversalServiceSensor msensor = getRegisteredSensor(msensorKey);
@@ -310,12 +313,18 @@ public class UniversalService extends Service {
 			// Add the listener to the map if it already doesn't exists
 			if (!hasRegisteredListener(mlistenerKey)) {
 				Log.d(tag, "adding a new listener with pid " + mlistenerKey);
-				addRegisteredListener(mlistenerKey, new UniversalServiceListener(mManager, listenerPid));
+				UniversalServiceListener mlistener = new UniversalServiceListener(mManager, listenerPid);
+				mlistener.start();
+				addRegisteredListener(mlistenerKey, mlistener);
 			}
 			UniversalServiceListener mlistener = getRegisteredListener(mlistenerKey);
 
 			msensor.linkListener(mlistener, rate);
-			mlistener.linkSensor(msensorKey, msensor);
+			Handler mhandler = mlistener.mhandler;
+			Map<String, Object> mMap = new HashMap<String, Object>();
+			mMap.put("key", msensorKey);
+			mMap.put("value", msensor);
+			mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_Link_Sensor, mMap));
 			// now enable that particular devices sensor
 			try {
 				setDriverSensorRate(devID, sType, msensor.getNextRate());

@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.UniversalConstants;
 
 public class UniversalServiceSensor {
 	private static String tag = UniversalServiceSensor.class.getCanonicalName();
@@ -81,9 +83,8 @@ public class UniversalServiceSensor {
 		// Go through the list of listeners and send the data to them
 		for (UniversalServiceListener mlistener: lList)
 		{
-			try {
-				mlistener.getListener().onSensorChanged(event);
-			} catch(RemoteException e){}
+			Handler mhandler = mlistener.mhandler;
+			mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, event));
 		}
 	}
 	

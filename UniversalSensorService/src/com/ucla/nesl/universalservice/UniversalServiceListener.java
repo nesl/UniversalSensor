@@ -2,15 +2,25 @@ package com.ucla.nesl.universalservice;
 
 import java.util.HashMap;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.os.RemoteException;
+import android.util.Log;
 
+import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
+import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalConstants;
 
-public class UniversalServiceListener {
+public class UniversalServiceListener extends Thread {
+	private static String tag = UniversalServiceListener.class.getCanonicalName();
 	private IUniversalSensorManager mlistener;
 	private HashMap<String, UniversalServiceSensor> sensorsList = new HashMap<String, UniversalServiceSensor>();
 	public int callingPid;
+	private Looper threadLooper;
+	public Handler mhandler;
 	
 	public UniversalServiceListener()
 	{
@@ -24,7 +34,7 @@ public class UniversalServiceListener {
 		this.callingPid = callingPid;
 	}
 
-	public void linkSensor(String sensorID,  UniversalServiceSensor sensor)
+	private void linkSensor(String sensorID,  UniversalServiceSensor sensor)
 	{
 		synchronized (sensorsList) {
 			sensorsList.put(sensorID, sensor);
@@ -60,15 +70,71 @@ public class UniversalServiceListener {
 		mSensor.unlinkListner(this);
 	}
 
-	public IUniversalSensorManager getListener()
-	{
-		return mlistener;
-	}
-	
+//	public IUniversalSensorManager getListener()
+//	{
+//		return mlistener;
+//	}
+//	
 	public boolean isEmpty()
 	{
 		synchronized (sensorsList) {
 			return sensorsList.isEmpty();
 		}
+	}
+	
+	public void onSensorChanged(SensorParcel event)
+	{
+		try {
+			mlistener.onSensorChanged(event);
+			Log.i(tag, "sending event to listener");
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private void quit()
+	{
+		threadLooper.quit();
+	}
+	
+	private void notifyDeviceChange(Device mdevice)
+	{
+		try {
+			mlistener.notifyDeviceChange(mdevice);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public void run()
+	{
+		Looper.prepare();
+		threadLooper = Looper.myLooper();
+		mhandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				switch (msg.what) {
+				case UniversalConstants.MSG_OnSensorChanged:
+					onSensorChanged((SensorParcel) msg.obj);
+					break;
+				case UniversalConstants.MSG_Quit:
+					quit();
+					break;
+				case UniversalConstants.MSG_Link_Sensor:
+					@SuppressWarnings("unchecked")
+					HashMap<String, Object> map =  (HashMap<String, Object>) msg.obj;
+					linkSensor((String)map.get("key"), (UniversalServiceSensor) map.get("value"));
+					break;
+				case UniversalConstants.MSG_NotifyDeviceChanged:
+					notifyDeviceChange((Device) msg.obj);
+				default:
+					break;
+				}
+			}
+		};
+		Looper.loop();
 	}
 }
