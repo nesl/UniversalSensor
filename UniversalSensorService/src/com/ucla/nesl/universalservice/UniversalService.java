@@ -41,7 +41,6 @@ public class UniversalService extends Service {
     	Map<String, UniversalServiceDevice> registeredDevices = new HashMap<String, UniversalServiceDevice>();
     	Map<String, UniversalServiceSensor> registeredSensors = new HashMap<String, UniversalServiceSensor>();
     	HashMap<String, UniversalServiceListener> registeredListeners = new HashMap<String, UniversalServiceListener>();
-    	HashMap<String, UniversalServiceListener> registeredNotifiers = new HashMap<String, UniversalServiceListener>();
 
     	public UniversalManagerService(UniversalService parent) {
     		this.parent = parent;
@@ -57,27 +56,27 @@ public class UniversalService extends Service {
     		return "" + pid;
     	}
 
-    	public boolean addListenerToNotificationList(String key, UniversalServiceListener mlistener)
-    	{
-    		synchronized (registeredNotifiers) {
-    			if(!registeredNotifiers.containsKey(key)) {
-    				Log.i(tag, "registering listener for notification");
-    				registeredNotifiers.put(key, mlistener);
-    			}
-			}
-    		return true;
-    	}
-
     	public boolean  notifyListeners(Device mdevice)
     	{
     		Handler mhandler;
+    		UniversalServiceListener mlistener;
     		
     		Log.i(tag, "notify for new device");
-    		synchronized (registeredNotifiers) {
-				for (Map.Entry<String, UniversalServiceListener> entry : registeredNotifiers.entrySet()) {
+    		synchronized (registeredListeners) {
+				for (Map.Entry<String, UniversalServiceListener> entry : registeredListeners.entrySet()) {
 					Log.i(tag, "sending notification to " + entry.getKey());
-					mhandler = entry.getValue().mhandler;
+					Log.i(tag, "sending notification to " + entry.getValue());
+					mlistener = entry.getValue();
+					if (mlistener.isNotifySet() == false)
+						continue;
+					mhandler = mlistener.getHandler();
+					Log.i(tag, "Sending message to handler");
+					if (mhandler == null) {
+						Log.e(tag, "mhandler is null");
+						return false;
+					}
 					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_NotifyDeviceChanged, mdevice));
+					Log.i(tag, "message sent to handler");
 				}
     		}
     		return true;
@@ -190,6 +189,7 @@ public class UniversalService extends Service {
 		public ArrayList<Device> listDevices() throws RemoteException {
 			ArrayList<Device> deviceList = new ArrayList<Device>();
 
+			Log.i(tag, "listDevices requested by " + Binder.getCallingPid());
 			synchronized (registeredDevices) {
 				for(Map.Entry<String, UniversalServiceDevice> entry : registeredDevices.entrySet())
 				{
@@ -292,6 +292,25 @@ public class UniversalService extends Service {
 			return true;
 		}
 
+		private void _registerListener(int listenerPid, String mlistenerKey, IUniversalSensorManager mManager)
+		{
+			Log.d(tag, "adding a new listener with pid " + mlistenerKey);
+			UniversalServiceListener mlistener = new UniversalServiceListener(mManager, listenerPid);
+			mlistener.start();
+			Handler mhandler = mlistener.getHandler();
+			while (mhandler == null) {
+				Log.d(tag, "_registerListener::handler is null");
+				try {
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				mhandler = mlistener.getHandler();
+			}
+			addRegisteredListener(mlistenerKey, mlistener);			
+		}
+		
 		// TODO: Check if the listener has already registered
 		@Override
 		public boolean registerListener(IUniversalSensorManager mManager,
@@ -312,19 +331,23 @@ public class UniversalService extends Service {
 
 			// Add the listener to the map if it already doesn't exists
 			if (!hasRegisteredListener(mlistenerKey)) {
-				Log.d(tag, "adding a new listener with pid " + mlistenerKey);
-				UniversalServiceListener mlistener = new UniversalServiceListener(mManager, listenerPid);
-				mlistener.start();
-				addRegisteredListener(mlistenerKey, mlistener);
+				_registerListener(listenerPid, mlistenerKey, mManager);
 			}
 			UniversalServiceListener mlistener = getRegisteredListener(mlistenerKey);
 
+			Log.i(tag, "linking listener");
 			msensor.linkListener(mlistener, rate);
-			Handler mhandler = mlistener.mhandler;
+			Handler mhandler = mlistener.getHandler();
 			Map<String, Object> mMap = new HashMap<String, Object>();
 			mMap.put("key", msensorKey);
 			mMap.put("value", msensor);
+			if (mhandler == null) {
+				Log.i(tag, "registerListener::handler is null");
+				return false;
+			}
+			Log.i(tag, "sending message");
 			mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_Link_Sensor, mMap));
+			Log.i(tag, "message sent");
 			// now enable that particular devices sensor
 			try {
 				setDriverSensorRate(devID, sType, msensor.getNextRate());
@@ -396,11 +419,17 @@ public class UniversalService extends Service {
 		@Override
 		public void registerNotification(IUniversalSensorManager mManager)
 				throws RemoteException {
-			Log.i(tag, "adding listener to notification list");
 			String mlistenerKey = generateListenerKey(Binder.getCallingPid());
-			UniversalServiceListener mlistener = new UniversalServiceListener(mManager, Binder.getCallingPid());
-			addRegisteredListener(mlistenerKey, mlistener);
-			addListenerToNotificationList(mlistenerKey, mlistener);
+			
+			Log.i(tag, "adding listener to notification list " + Binder.getCallingPid());
+
+			// Add the listener to the map if it already doesn't exists
+			if (!hasRegisteredListener(mlistenerKey)) {
+				_registerListener(Binder.getCallingPid(), mlistenerKey, mManager);
+			}
+			UniversalServiceListener mlistener = getRegisteredListener(mlistenerKey);
+
+			mlistener.setNotify();
 		}
     }
 }

@@ -83,7 +83,7 @@ public class UniversalServiceSensor {
 		// Go through the list of listeners and send the data to them
 		for (UniversalServiceListener mlistener: lList)
 		{
-			Handler mhandler = mlistener.mhandler;
+			Handler mhandler = mlistener.getHandler();
 			mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, event));
 		}
 	}

@@ -12,7 +12,7 @@ interface IUniversalManagerService {
 	boolean unregisterListener(String devID, int sType);
 	boolean registerDriver(in Device device, IUniversalDriverManager mDriver, int sType);
 	boolean unregisterDriver(String devID, int sType);
-	oneway void registerNotification(IUniversalSensorManager mManager);
+	void registerNotification(IUniversalSensorManager mManager);
 	oneway void onSensorChanged(in SensorParcel event);
 	String getDevID();
 }

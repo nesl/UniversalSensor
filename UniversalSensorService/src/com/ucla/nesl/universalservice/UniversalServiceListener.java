@@ -19,8 +19,9 @@ public class UniversalServiceListener extends Thread {
 	private IUniversalSensorManager mlistener;
 	private HashMap<String, UniversalServiceSensor> sensorsList = new HashMap<String, UniversalServiceSensor>();
 	public int callingPid;
+	private boolean isNotify = false;
 	private Looper threadLooper;
-	public Handler mhandler;
+	private Handler mhandler;
 	
 	public UniversalServiceListener()
 	{
@@ -34,6 +35,22 @@ public class UniversalServiceListener extends Thread {
 		this.callingPid = callingPid;
 	}
 
+	public Handler getHandler()
+	{
+		return mhandler;
+	}
+	
+	public boolean setNotify()
+	{
+		isNotify = true;
+		return true;
+	}
+	
+	public boolean isNotifySet()
+	{
+		return isNotify;
+	}
+	
 	private void linkSensor(String sensorID,  UniversalServiceSensor sensor)
 	{
 		synchronized (sensorsList) {
@@ -101,7 +118,9 @@ public class UniversalServiceListener extends Thread {
 	private void notifyDeviceChange(Device mdevice)
 	{
 		try {
+			Log.i(tag, "sending notification");
 			mlistener.notifyDeviceChange(mdevice);
+			Log.i(tag, "notification sent");
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -113,6 +132,7 @@ public class UniversalServiceListener extends Thread {
 	{
 		Looper.prepare();
 		threadLooper = Looper.myLooper();
+		Log.i(tag, "starting thread");
 		mhandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
