@@ -21,6 +21,7 @@ public class UniversalDriverManager {
 	private String devID  = null;
 	private String vendorID = null;
 	UniversalDriverManagerStub mDriverManagerStub;
+	boolean once = true;
 
 	public static UniversalDriverManager create(Context context, String vendorID)
 	{
@@ -65,7 +66,7 @@ public class UniversalDriverManager {
 		return true;
 	}
 
-	public boolean registerDriver(UniversalDriverListener mlistener, int sType)
+	public boolean registerDriver(UniversalDriverListener mlistener, int sType, int rate)
 	{
 		// devID null means that the connection establishment is not yet complete
 		if (devID == null) {
@@ -73,16 +74,28 @@ public class UniversalDriverManager {
 		}
 
 		// Check if sensor is already registered
-		if (device.addSensor(sType) == false) {
+		if (device.addSensor(sType, rate) == false) {
 			Log.i(tag, "sType " + sType + " already registered");
 			return false;
 		}
 		
 		if (mDriverManagerStub == null)
 			mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);
-		Log.i(tag, "vendro " + device.getVendorID());
+		Log.d(tag, "vendor id: " + device.getVendorID());
 		try {
-			remoteConnection.registerDriver(device, mDriverManagerStub, sType);
+			remoteConnection.registerDriver(device, mDriverManagerStub, sType, rate);
+			if (once) {
+				float[] val = new float[3];
+				val[0] = 0.01f;
+				val[1] = 0.02f;
+				val[2] = 0.03f;
+				UniversalSensorEvent[] event = new UniversalSensorEvent[3];
+				event[0] = new UniversalSensorEvent(1, val, 100234);
+				event[1] = new UniversalSensorEvent(2, val, 100235);
+				event[2] = new UniversalSensorEvent(3, val, 100236);
+				remoteConnection.pushArray(event);
+				once = false;
+			}
 		} catch (RemoteException e) {
 		}
 		return true;
@@ -109,7 +122,7 @@ public class UniversalDriverManager {
 		}
 
 		@Override
-		public void setRate(int sType, int rate) throws RemoteException {
+		public void setRate(int sType, int rate, float updateInterval) throws RemoteException {
 			this.mlistener.setRate(sType, rate);
 		}
 

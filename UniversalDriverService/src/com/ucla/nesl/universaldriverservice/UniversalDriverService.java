@@ -24,6 +24,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	SensorManager mSensorManager;
 	Sensor mSensor;
 	UniversalDriverManager mdriverManager1 = null, mdriverManager2 = null;
+	int accRate = 60, lightRate = 60;
 	boolean registered = false;
 	int rate = 0;
 	
@@ -51,13 +52,13 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	{
 		// Exposing accelerometer for now. You can expose all the sensors.
 		// Only the exposed sensors will be visible to the applications
-		ArrayList<Integer> sensorList = new ArrayList<Integer>();
-		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_ACCELEROMETER));
-		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_LIGHT));
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER);
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT);
+//		ArrayList<Integer> sensorList = new ArrayList<Integer>();
+//		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_ACCELEROMETER));
+//		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_LIGHT));
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, accRate);
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT, lightRate);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-//        h2.postDelayed(r1, 20000);
+        h2.postDelayed(r1, 20000);
         registered = true;
 	}
 

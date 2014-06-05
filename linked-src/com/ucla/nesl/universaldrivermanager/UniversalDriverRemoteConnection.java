@@ -38,14 +38,25 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 		} catch(RemoteException e) {}
 	}
 
-	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub, int sType) throws RemoteException
+	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub,
+			int sType, int rate) throws RemoteException
 	{
-		return service.registerDriver(device, mDriverManagerStub, sType);
+		return service.registerDriver(device, mDriverManagerStub, sType, rate);
 	}
 
 	public boolean unregisterDriver(String devID, int sType) throws RemoteException
 	{
 		return service.unregisterDriver(devID, sType);
+	}
+	
+	public void pushArray(SensorParcel[] sp)
+	{
+		try {
+			service.onSensorChangedArray(sp, sp.length);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
 

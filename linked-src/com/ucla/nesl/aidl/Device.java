@@ -1,16 +1,20 @@
 package com.ucla.nesl.aidl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.R.integer;
 import android.hardware.Sensor;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Device implements Parcelable{
 	private String devID;
 	private String vendorID;
-	private ArrayList<Integer> sensorList = new ArrayList<Integer>();
+//	private ArrayList<Integer> sensorList = new ArrayList<Integer>();
+	private HashMap<Integer, ArrayList<Integer>> mSensor = new HashMap<Integer, ArrayList<Integer>>();
 
 	public Device()
 	{
@@ -28,14 +32,16 @@ public class Device implements Parcelable{
 	{
 		this.devID      = new String(device.devID);
 		this.vendorID   = new String(device.vendorID);
-		this.sensorList = new ArrayList<Integer>(device.sensorList);
+//		this.sensorList = new ArrayList<Integer>(device.sensorList);
+		this.mSensor    = new HashMap<Integer, ArrayList<Integer>>(device.mSensor);
 	}
 
 	public Device(String vendorID, String devID)
 	{
 		this.devID = new String(devID);
 		this.vendorID = new String(vendorID);
-		sensorList = new ArrayList<Integer>();
+//		sensorList = new ArrayList<Integer>();
+		mSensor    = new HashMap<Integer, ArrayList<Integer>>();
 	}
 
 	public String getDevID()
@@ -58,45 +64,57 @@ public class Device implements Parcelable{
 		this.vendorID = vendorID;
 	}
 	
-	synchronized public boolean addSensor(int sType)
+	synchronized public boolean addSensor(int sType, int rate)
 	{
-		Integer tmp = new Integer(sType);
-		if (sensorList.indexOf(tmp) >= 0)
-			return false;
-		sensorList.add(tmp);
-		return true;
+		boolean flag = false;
+		int key = Integer.valueOf(sType);
+		
+		if (!mSensor.containsKey(sType)) {
+			mSensor.put(Integer.valueOf(sType), new ArrayList<Integer>());
+			mSensor.get(key).add(Integer.valueOf(1));
+			mSensor.get(key).add(Integer.valueOf(rate));
+			flag = true;
+		}
+		return flag;
 	}
 
-	public boolean addSensor(ArrayList<Integer> sensorList)
+	synchronized public int getMaxRate(int sType)
 	{
-		for (int sType : sensorList)
-			addSensor(sType);
-		return true;
+		int rate = -1;
+		if (mSensor.containsKey(sType)) {
+			rate = mSensor.get(sType).get(1);
+		}
+		return rate;
 	}
 
+	private void _removeSensor(HashMap<String, Object> map)
+	{
+		return;
+	}
+	
 	synchronized public boolean removeSensor(int sType)
 	{
 		if (sType == Sensor.TYPE_ALL) {
-			sensorList.clear();
+			mSensor.clear();
 			return true;
 		}
-		Integer tmp = new Integer(sType);
-		int index = sensorList.indexOf(tmp);
-		if (index >= 0) {
-			sensorList.remove(index);
+
+		Integer key = Integer.valueOf(sType);
+		if (mSensor.containsKey(key)) {
+			mSensor.remove(key);
 			return true;
 		} else
 			return false;
 	}
 
-	synchronized public ArrayList<Integer> getSensorList()
+	synchronized public HashMap<Integer, ArrayList<Integer>> getSensorList()
 	{
-		return sensorList;
+		return mSensor;
 	}
 	
 	synchronized public boolean isEmpty()
 	{
-		return sensorList.isEmpty();
+		return mSensor.isEmpty();
 	}
 	
 	@Override
@@ -104,12 +122,12 @@ public class Device implements Parcelable{
 		return 0;
 	}
 
-	private int[] getIntArray()
+	private int[] getIntArray(ArrayList<Integer> obj)
 	{
-		int[] sensors = new int[sensorList.size()];
-		for (int i = 0; i < sensorList.size(); i++)
+		int[] sensors = new int[obj.size()];
+		for (int i = 0; i < obj.size(); i++)
 		{
-			sensors[i] = sensorList.get(i);
+			sensors[i] = (Integer) obj.get(i);
 		}
 		return sensors;
 	}
@@ -131,8 +149,18 @@ public class Device implements Parcelable{
 			Device device = new Device();
 			device.devID = src.readString();
 			device.vendorID = src.readString();
-			int[] iarray = src.createIntArray();
-			device.sensorList = device.getArrayList(iarray);
+//			int[] iarray = src.createIntArray();
+//			device.sensorList = device.getArrayList(iarray);
+			int mapSize = src.readInt();
+			if (mapSize > 0) {
+				for (int i = 0; i < mapSize; i++)
+				{
+					int key = src.readInt();
+					int[] iarray = src.createIntArray();
+					ArrayList<Integer> value = device.getArrayList(iarray);
+					device.mSensor.put(key, value);
+				}
+			}
 			return device;
 		}
 
@@ -146,6 +174,14 @@ public class Device implements Parcelable{
 	public void writeToParcel(Parcel parcel, int flags) {
 		parcel.writeString(devID);
 		parcel.writeString(vendorID);
-		parcel.writeIntArray(getIntArray());
+		parcel.writeInt(mSensor.size());
+//		parcel.writeIntArray(getIntArray());
+		if (mSensor.size() > 0) {
+			for(Map.Entry<Integer, ArrayList<Integer>> entry : mSensor.entrySet())
+			{
+				parcel.writeInt(entry.getKey());
+				parcel.writeIntArray(getIntArray(entry.getValue()));
+			}
+		}
 	}
 }

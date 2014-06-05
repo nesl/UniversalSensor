@@ -2,6 +2,7 @@ package com.ucla.nesl.app;
 
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -60,11 +61,13 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             	dlist = mManager.listDevices();
             	int devNum = Integer.valueOf(value.split(":")[0]);
             	int sType = Integer.valueOf(value.split(":")[1]);
+            	int rate = Integer.valueOf(value.split(":")[2]);
+            	float updateInterval = Float.parseFloat(value.split(":")[3]);
 
             	device = dlist.get(devNum);
-            	Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," +sType);
+            	Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + ", " + updateInterval);
 
-                registerListener(device.getDevID(), sType, 1);
+                registerListener(device.getDevID(), sType, rate, updateInterval);
             }
         });
 
@@ -79,8 +82,8 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             		Log.i(tag, device.getVendorID() +":" + device.getDevID());
 
 
-            		for (int i : device.getSensorList())
-            			Log.i(tag, "" + i + ":" + UniversalSensorNameMap.getName(i));
+            		for (Map.Entry<Integer, ArrayList<Integer>> entry: device.getSensorList().entrySet())
+            			Log.i(tag, UniversalSensorNameMap.getName(entry.getKey()) + ", max rate" + entry.getValue().get(1));
             	}
             	registerNotification();
             }
@@ -145,9 +148,9 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     	mManager.registerNotification(this);
     }
     
-    private void registerListener(String devID, int sType, int rate)
+    private void registerListener(String devID, int sType, int rate, float updateInterval)
     {
-    	mManager.registerListener(this, devID, sType, rate);
+    	mManager.registerListener(this, devID, sType, rate, updateInterval);
     }
     
     private void unregisterListener(String devID, int sType)

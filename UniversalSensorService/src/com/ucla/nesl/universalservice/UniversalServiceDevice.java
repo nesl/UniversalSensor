@@ -1,9 +1,11 @@
 package com.ucla.nesl.universalservice;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
+import com.ucla.nesl.lib.UniversalSensor;
 
 public class UniversalServiceDevice extends Device {
 	// Ibinder handler used to communicate with the driver
@@ -20,10 +22,10 @@ public class UniversalServiceDevice extends Device {
 		this.mDriverStub = mDriverStub;
 	}
 	
-	synchronized public void addSensor(UniversalServiceSensor msensor)
+	synchronized public void addSensor(UniversalServiceSensor msensor, int rate)
 	{
 		sensorList.add(msensor);
-		super.addSensor(msensor.sType);
+		super.addSensor(msensor.sType, rate);
 	}
 	
 	synchronized public void removeSensor(UniversalServiceSensor msensor)
@@ -44,5 +46,14 @@ public class UniversalServiceDevice extends Device {
 	synchronized public boolean isEmpty()
 	{
 		return sensorList.isEmpty();
+	}
+	
+	synchronized public boolean unregisterSensor(int sType)
+	{
+		if (sType == UniversalSensor.TYPE_ALL) {
+			for (UniversalServiceSensor mSensor : sensorList) {
+				removeSensor(mSensor);
+			}
+		}
 	}
 }

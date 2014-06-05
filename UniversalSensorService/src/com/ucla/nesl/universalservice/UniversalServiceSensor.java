@@ -3,10 +3,12 @@ package com.ucla.nesl.universalservice;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import android.R.string;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalConstants;
@@ -15,76 +17,113 @@ public class UniversalServiceSensor {
 	private static String tag = UniversalServiceSensor.class.getCanonicalName();
 	private String devID;
 	public  int sType;
-	public  String key;
-	private ArrayList<UniversalServiceListener> listenersList;
+	private String mSensorKey;
+	public  int maxRate;
+	private int sRate;
+	private float sUpdateInterval;
+	UniversalServiceDevice mdevice;
+	private Map<String, _Listener> listenersList = new HashMap<String, UniversalServiceSensor._Listener>();
 	private Map<UniversalServiceListener, Integer> listenerSensorRate = new HashMap<UniversalServiceListener, Integer>();
-		
-	public UniversalServiceSensor(String devID, int sType, String key)
+	
+	public UniversalServiceSensor(String devID, String key, UniversalServiceDevice mdevice, int sType, int rate)
 	{
+		this.mdevice = mdevice;
 		this.devID = new String(devID);
 		this.sType = sType;
-		this.key   = new String(key);
-		listenersList = new ArrayList<UniversalServiceListener>();
+		this.mSensorKey = new String(key);
+		this.maxRate = rate;
+		this.sRate  = 0;
+		this.sUpdateInterval = 0;
+//		listenersList = new ArrayList<UniversalServiceListener>();
 	}
-	
+
+/*
 	@SuppressWarnings("unchecked")
-	public ArrayList<UniversalServiceListener> getSensorList()
+	private ArrayList<UniversalServiceListener> getSensorList()
 	{
 		synchronized (listenersList) {
-			return (ArrayList<UniversalServiceListener>)listenersList.clone();
+//			return (ArrayList<UniversalServiceListener>)listenersList.clone();
 		}
 	}
+*/
 	
-	// This function is called by the listener to add itself into the
-	// list of registeredListener of this sensor type
-	public void linkListener(UniversalServiceListener mlistener, int rate)
+	private void updateSamplingParams()
 	{
+		boolean flag = true;
+		_Listener mlistener;
+		Handler   mhandler;
 		synchronized (listenersList) {
-			if (!listenersList.contains(mlistener)) {
-				listenersList.add(mlistener);
-				(listenerSensorRate).put(mlistener, rate);
+			for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
+				mlistener = entry.getValue();
+				if (flag) {
+					sRate = mlistener.getRate();
+					sUpdateInterval = mlistener.getUpdateInterval();
+				} else {
+					if (sRate < mlistener.getRate())
+						sRate = mlistener.getRate();
+					if (sUpdateInterval > mlistener.getUpdateInterval())
+						sUpdateInterval = mlistener.getUpdateInterval();
+				}
+			}
+			for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
+				mhandler = entry.getValue().getHandler();
+				Bundle bundle = new Bundle();
+				bundle.putString(UniversalConstants.sType, mSensorKey);
+				bundle.putInt(UniversalConstants.rate, sRate);
+				bundle.putFloat(UniversalConstants.updateInterval, sUpdateInterval);
+				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_UpdateSamplingParam, bundle));
 			}
 		}
+		//updateDriver
+		try {
+			mdevice.mDriverStub.setRate(sType, sRate, sUpdateInterval);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	// This function is called by the listener to add itself into the
+	// list of registeredListener of this sensor type
+	public void linkListener(String listenerID, UniversalServiceListener mUniversalListener, int rate, float updateInterval)
+	{
+		_Listener mListener = null;
+		synchronized (listenersList) {
+			if (!listenersList.containsKey(listenerID)) {
+				mListener = new _Listener(listenerID, mUniversalListener, rate, updateInterval);
+				listenersList.put(listenerID, mListener);
+			} else {
+				mListener = listenersList.get(listenerID);
+				mListener.update(rate, updateInterval);
+			}
+		}
+		updateSamplingParams();
 	}
 
 	// This function is called by the listener to remove itself from the
 	// list of registeredListener of this sensor type
-	public void unlinkListner(UniversalServiceListener mlistener)
+	public void unlinkListner(String listenerID)
 	{
+		_Listener mListener = null;
 		synchronized (listenersList) {
-			if (listenersList.contains(mlistener)) {
-				listenersList.remove(mlistener);
-				listenerSensorRate.remove(mlistener);
+			if (listenersList.containsKey(listenerID)) {
+				mListener = listenersList.remove(listenerID);
 			}
 		}
-	}
-	
-	public int getNextRate()
-	{
-		int max = 0;
-		synchronized (listenersList) {
-			for(Map.Entry<UniversalServiceListener, Integer> entry : listenerSensorRate.entrySet()) {
-				if (max < entry.getValue())
-					max = entry.getValue();
-			}
-		}
-		return max;
+		// Nothing to do here
+		updateSamplingParams();
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void onSensorChanged(SensorParcel event)
 	{
-		ArrayList<UniversalServiceListener> lList;
-
 		synchronized (listenersList) {
-			lList = (ArrayList<UniversalServiceListener>)listenersList.clone();
-		}
-
-		// Go through the list of listeners and send the data to them
-		for (UniversalServiceListener mlistener: lList)
-		{
-			Handler mhandler = mlistener.getHandler();
-			mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, event));
+			// Go through the list of listeners and send the data to them
+			for (Map.Entry<String, _Listener> entry : listenersList.entrySet())
+			{
+				Handler mhandler = entry.getValue().getHandler();
+				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, event));
+			}
 		}
 	}
 	
@@ -101,24 +140,53 @@ public class UniversalServiceSensor {
 	}
 
 	// This is called when the driver notifies the service
-	// that a particular type of sensor is no more available
-	// This can happen when the mobile phone goes out of range
-	@SuppressWarnings("unchecked")
 	synchronized public boolean unregister()
 	{
-		ArrayList<UniversalServiceListener> lList;
-
 		synchronized (listenersList) {
-			lList = (ArrayList<UniversalServiceListener>)listenersList.clone();
+			for(Map.Entry<String, _Listener> entry : listenersList.entrySet())
+			{
+				Handler mhandler = entry.getValue().getHandler();
+				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_Unlink_Sensor, mSensorKey));
+			}
 			listenersList.clear();
 		}
-
-		for(UniversalServiceListener mlistener : lList)
-		{
-			// Notify the listener about the sensor being disabled
-			mlistener.unlinkSensor(key);			
-		}
-
 		return true;
+	}
+	
+	private class _Listener
+	{
+		String					 listenerID = null;
+		int 					 lRate	   = 0;
+		float				     lUpdateInterval = 0;
+		UniversalServiceListener mListener = null;
+		
+		public _Listener(String listenerID, UniversalServiceListener mListener, int lRate, float lUpdateInterval)
+		{
+			this.listenerID = new String(listenerID);
+			this.mListener  = mListener;
+			this.lRate      = lRate;
+			this.lUpdateInterval = lUpdateInterval;
+		}
+		
+		public void update(int lrate, float lUpdateInterval)
+		{
+			this.lRate = lRate;
+			this.lUpdateInterval = lUpdateInterval;
+		}
+		
+		public int getRate()
+		{
+			return lRate;
+		}
+		
+		public float getUpdateInterval()
+		{
+			return lUpdateInterval;
+		}
+		
+		public Handler getHandler()
+		{
+			return mListener.getHandler();
+		}
 	}
 }
