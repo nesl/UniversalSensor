@@ -40,11 +40,11 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 	}
 	
 	public void registerListener(UniversalSensorManagerStub cb,
-			String devID, int sType, int rateUs, float updateInterval)
+			String devID, int sType, int rateUs, int bundleSize)
 	{
 		try {
-			service.registerListener(cb, devID, sType, rateUs, updateInterval);
-		}catch(RemoteException e){}
+			service.registerListener(cb, devID, sType, rateUs, bundleSize);
+		}catch(RemoteException e) {}
 	}
 	
 	public void unregisterListener(String devID, int sType)

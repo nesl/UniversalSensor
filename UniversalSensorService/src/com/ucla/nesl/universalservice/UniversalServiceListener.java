@@ -12,6 +12,7 @@ import android.util.Log;
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.SensorParcelWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 
 public class UniversalServiceListener extends Thread {
@@ -62,7 +63,7 @@ public class UniversalServiceListener extends Thread {
 		sensorID 		= (String) mMap.get("key");
 		universalSensor = (UniversalServiceSensor) mMap.get("value");
 		rate	 		= (Integer) mMap.get("rate");
-		updateInterval 	= (Float) mMap.get("updateInterval");
+		updateInterval 	= (Integer) mMap.get("bundleSize");
 
 		mSensor = new _Sensor(sensorID, universalSensor, rate, updateInterval);
 
@@ -72,20 +73,29 @@ public class UniversalServiceListener extends Thread {
 		universalSensor.linkListener(""+callingPid, this, rate, updateInterval);
 	}
 
-	// This method is called by the sensor when it is no longer available
+	/**
+	 *  This method is called by the sensor when it is no longer available
+	 * @param sensorID
+	 */
 	public void unlinkSensor(String sensorID)
 	{
-/*		UniversalServiceSensor mSensor;
-		synchronized (sensorsList) {
-//			mSensor = sensorsList.remove(sensorID);
+		UniversalServiceSensor mUniversalServiceSensor;
+		_Sensor mSensor;
+		synchronized (sensorMap) {
+			mSensor = sensorMap.remove(sensorID);
 		}
 
+		if (mSensor == null) {
+			return;
+		}
+		mUniversalServiceSensor = mSensor.getRegisteredSensor();
 		try {
-			mlistener.notifySensorChanged(mSensor.getDevID(), mSensor.sType, UniversalConstants.ACTION_UNREGISTER);
+			mlistener.notifySensorChanged(mUniversalServiceSensor.getDevID(),
+					mUniversalServiceSensor.sType, UniversalConstants.ACTION_UNREGISTER);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
-*/	}
+	}
 
 	// This functioned is called by the service when the app wants
 	// to unregister itself with one or more sensors. For now let us
@@ -93,13 +103,15 @@ public class UniversalServiceListener extends Thread {
 	// TODO: extend it to unregister all
 	public void unregister(String key)//, int sType)
 	{
-/*		// remove the entry from its list
-		UniversalServiceSensor mSensor;
-		synchronized (sensorsList) {
-			mSensor = sensorsList.remove(key);
+		// remove the entry from its list
+		_Sensor mSensor;
+		synchronized (sensorMap) {
+			mSensor = sensorMap.remove(key);
 		}
-		mSensor.unlinkListner(this);
-*/	}
+
+		if (mSensor != null)
+			mSensor.getRegisteredSensor().unlinkListner("" + callingPid);
+	}
 
 //	public IUniversalSensorManager getListener()
 //	{
@@ -113,15 +125,14 @@ public class UniversalServiceListener extends Thread {
 		}
 	}
 
-	public void onSensorChanged(SensorParcel event)
+	public void onSensorChanged(SensorParcel[] event, int length)
 	{
-		try {
-			mlistener.onSensorChanged(event);
-			Log.i(tag, "sending event to listener");
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			mlistener.onSensorChanged(event);
+//		} catch (RemoteException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	private void quit()
@@ -165,7 +176,7 @@ public class UniversalServiceListener extends Thread {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case UniversalConstants.MSG_OnSensorChanged:
-					onSensorChanged((SensorParcel) msg.obj);
+					onSensorChanged(((SensorParcelWrapper) msg.obj).sp, ((SensorParcelWrapper) msg.obj).length);
 					break;
 				case UniversalConstants.MSG_Quit:
 					quit();
@@ -180,7 +191,10 @@ public class UniversalServiceListener extends Thread {
 					updateSamplingParam((Bundle) msg.obj);
 					break;
 				case UniversalConstants.MSG_Unlink_Sensor:
+					unlinkSensor((String) msg.obj);
 					break;
+				case UniversalConstants.MSG_UnregisterListener:
+					unregister((String) msg.obj);
 				default:
 					break;
 				}
@@ -196,13 +210,13 @@ public class UniversalServiceListener extends Thread {
 		int						sRate 	 	    = -1;
 		float					sUpdateInterval = 0;
 		String 					sensorID 	= null;
-		UniversalServiceSensor 	msensor  	= null; 
+		UniversalServiceSensor 	mSensor  	= null; 
 
-		public _Sensor(String sensorID, UniversalServiceSensor msensor,
+		public _Sensor(String sensorID, UniversalServiceSensor mSensor,
 				int lRate, float lUpdateInterval)
 		{
 			this.sensorID = new String(sensorID);
-			this.msensor  = msensor;
+			this.mSensor  = mSensor;
 			this.lRate    = lRate;
 			this.lUpdateInterval = lUpdateInterval;
 		}
@@ -211,6 +225,11 @@ public class UniversalServiceListener extends Thread {
 		{
 			this.sRate    = sRate;
 			this.sUpdateInterval = sUpdateInterval;
+		}
+		
+		public UniversalServiceSensor getRegisteredSensor()
+		{
+			return mSensor;
 		}
 	}
 }

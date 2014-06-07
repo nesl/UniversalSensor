@@ -1,10 +1,12 @@
 package com.ucla.nesl.universalservice;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
+import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;
 
 public class UniversalServiceDevice extends Device {
@@ -15,45 +17,105 @@ public class UniversalServiceDevice extends Device {
 	// by this device. So, two things can be done on sensor count zero
 	// a) remove the device from the listing
 	// b) only remove the device when an explicit unregister is received
-	private ArrayList<UniversalServiceSensor> sensorList = new ArrayList<UniversalServiceSensor>();
+//	private ArrayList<UniversalServiceSensor> sensorList = new ArrayList<UniversalServiceSensor>();
+	private HashMap<String, UniversalServiceSensor> registeredSensors = new HashMap<String, UniversalServiceSensor>();
 	
 	public UniversalServiceDevice(Device device, IUniversalDriverManager mDriverStub) {
 		super(device);
 		this.mDriverStub = mDriverStub;
 	}
 	
-	synchronized public void addSensor(UniversalServiceSensor msensor, int rate)
+	public boolean addRegisteredSensor(String sensorKey, UniversalServiceSensor msensor)
 	{
-		sensorList.add(msensor);
-		super.addSensor(msensor.sType, rate);
-	}
-	
-	synchronized public void removeSensor(UniversalServiceSensor msensor)
-	{
-		super.removeSensor(msensor.sType);
-		if(sensorList.contains(msensor))
-			sensorList.remove(sensorList.indexOf(msensor));
+		synchronized (registeredSensors) {
+			registeredSensors.put(sensorKey, msensor);
+		}
+		return true;
 	}
 
-	synchronized public void onDestroy()
+	public UniversalServiceSensor getRegisteredSensor(String sensorKey)
 	{
-		for(UniversalServiceSensor msensor:sensorList)
-		{
-			msensor.unregister();
+		UniversalServiceSensor msensor = null;
+		synchronized (registeredSensors) {
+			msensor = registeredSensors.get(sensorKey);
 		}
+		return msensor;
 	}
+
+	public UniversalServiceSensor removeRegisteredSensor(String sensorKey)
+	{
+		UniversalServiceSensor msensor = null;
+		synchronized (registeredSensors) {
+			msensor = registeredSensors.remove(sensorKey);
+		}
+		return msensor;
+	}
+
+//	synchronized public void removeSensor(UniversalServiceSensor msensor)
+//	{
+//		super.removeSensor(msensor.sType);
+//		if(sensorList.contains(msensor))
+//			sensorList.remove(sensorList.indexOf(msensor));
+//	}
+//
+//	synchronized public void onDestroy()
+//	{
+//		for(UniversalServiceSensor msensor:sensorList)
+//		{
+//			msensor.unregister();
+//		}
+//	}
 	
 	synchronized public boolean isEmpty()
 	{
-		return sensorList.isEmpty();
+		synchronized (registeredSensors) {
+			return registeredSensors.isEmpty();
+		}
 	}
 	
-	synchronized public boolean unregisterSensor(int sType)
+	public boolean unregisterSensor(int sType, String mSensorKey)
 	{
+		boolean flag = true;
+		UniversalServiceSensor mSensor;
+		
 		if (sType == UniversalSensor.TYPE_ALL) {
-			for (UniversalServiceSensor mSensor : sensorList) {
-				removeSensor(mSensor);
+			synchronized (registeredSensors) {
+				for (Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet()) {
+					entry.getValue().unregister();
+				}
+				registeredSensors.clear();
 			}
+		} else {
+			mSensor = getRegisteredSensor(mSensorKey);
+			if (mSensor == null)
+				flag = false;
+			mSensor.unregister();
+		}
+		super.removeSensor(sType);
+		
+		return flag;
+	}
+	
+	public boolean registerSensor(String mSensorKey, int sType, int maxRate, int bundleSize)
+	{
+		UniversalServiceSensor mSensor = null;
+		
+		mSensor = getRegisteredSensor(mSensorKey);
+		if (mSensor == null) {
+			mSensor = new UniversalServiceSensor(this, mSensorKey, sType, maxRate, bundleSize);
+			addRegisteredSensor(mSensorKey, mSensor);
+		} else {
+			 mSensor.update(maxRate, bundleSize);
+		}
+		super.addSensor(sType, maxRate, bundleSize);
+		
+		return true;
+	}
+	
+	public UniversalServiceSensor getSensor(String mSensorKey)
+	{
+		synchronized (registeredSensors) {
+			return getRegisteredSensor(mSensorKey);
 		}
 	}
 }

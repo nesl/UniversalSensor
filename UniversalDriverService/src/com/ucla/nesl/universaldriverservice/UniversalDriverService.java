@@ -27,6 +27,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	int accRate = 60, lightRate = 60;
 	boolean registered = false;
 	int rate = 0;
+	int bundleSize = 1;
 	
 	@Override
     public void onCreate() {
@@ -55,10 +56,10 @@ public class UniversalDriverService extends Service implements SensorEventListen
 //		ArrayList<Integer> sensorList = new ArrayList<Integer>();
 //		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_ACCELEROMETER));
 //		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_LIGHT));
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, accRate);
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT, lightRate);
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, accRate, bundleSize);
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT, lightRate, bundleSize);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-        h2.postDelayed(r1, 20000);
+//        h2.postDelayed(r1, 20000);
         registered = true;
 	}
 
@@ -104,8 +105,10 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	// this is android's SensorEventListener function
 	@Override
 	public void onSensorChanged(SensorEvent event) {
+		UniversalSensorEvent[] mUniversalSensorEvent = new UniversalSensorEvent[1];
+		mUniversalSensorEvent[0] = new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp);
 		if (rate > 0 && registered)
-			mdriverManager1.push(new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp));
+			mdriverManager1.push(mUniversalSensorEvent);
 	}
 
 	@Override

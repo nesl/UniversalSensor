@@ -50,13 +50,13 @@ public class UniversalSensorManager {
 	}
 	
 	public boolean registerListener(UniversalEventListener mlistener, //UniversalSensor sensor, 
-			String devID, int sType, int rateUs, float updateInterval) {
+			String devID, int sType, int rateUs, int bundleSize) {
 		if (mstub == null) {
 			Log.i(tag, "mstub is null " + devID);
 			return false;
 		}
 		mstub.registerListener(mlistener);
-		remoteConnection.registerListener(mstub, devID, sType, rateUs, updateInterval);
+		remoteConnection.registerListener(mstub, devID, sType, rateUs, bundleSize);
 		return true;
 	}
 	

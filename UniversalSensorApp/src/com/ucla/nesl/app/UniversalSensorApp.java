@@ -62,12 +62,12 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             	int devNum = Integer.valueOf(value.split(":")[0]);
             	int sType = Integer.valueOf(value.split(":")[1]);
             	int rate = Integer.valueOf(value.split(":")[2]);
-            	float updateInterval = Float.parseFloat(value.split(":")[3]);
+            	int bundleSize = Integer.valueOf(value.split(":")[3]);
 
             	device = dlist.get(devNum);
-            	Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + ", " + updateInterval);
+            	Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + ", " + bundleSize);
 
-                registerListener(device.getDevID(), sType, rate, updateInterval);
+                registerListener(device.getDevID(), sType, rate, bundleSize);
             }
         });
 
@@ -148,9 +148,9 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     	mManager.registerNotification(this);
     }
     
-    private void registerListener(String devID, int sType, int rate, float updateInterval)
+    private void registerListener(String devID, int sType, int rate, int bundleSize)
     {
-    	mManager.registerListener(this, devID, sType, rate, updateInterval);
+    	mManager.registerListener(this, devID, sType, rate, bundleSize);
     }
     
     private void unregisterListener(String devID, int sType)
