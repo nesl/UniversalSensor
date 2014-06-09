@@ -1,11 +1,7 @@
 package com.ucla.nesl.aidl;
 
-import com.ucla.nesl.lib.UniversalSensor;
-import com.ucla.nesl.lib.UniversalSensorHelper;
-
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 
 public class SensorParcel implements Parcelable {
 	public String devID;
@@ -14,6 +10,7 @@ public class SensorParcel implements Parcelable {
 	public float values[];
 	public float timestamp;
 	public int accuracy;
+	public String mSensorKey;
 
 	public SensorParcel()
 	{

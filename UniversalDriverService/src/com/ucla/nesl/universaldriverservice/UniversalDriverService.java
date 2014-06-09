@@ -24,15 +24,20 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	SensorManager mSensorManager;
 	Sensor mSensor;
 	UniversalDriverManager mdriverManager1 = null, mdriverManager2 = null;
-	int accRate = 60, lightRate = 60;
+	int accRate[], lightRate[];
 	boolean registered = false;
 	int rate = 0;
-	int bundleSize = 1;
+	int bundleSize[];
 	
 	@Override
     public void onCreate() {
         super.onCreate();
         Log.i(tag, "onCreate called driver");
+        
+        accRate = new int[]{200, 100, 50, 25};
+        lightRate = new int[]{200, 100, 50, 25};
+        bundleSize = new int[]{20};
+        
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // This is the driver.
@@ -53,9 +58,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	{
 		// Exposing accelerometer for now. You can expose all the sensors.
 		// Only the exposed sensors will be visible to the applications
-//		ArrayList<Integer> sensorList = new ArrayList<Integer>();
-//		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_ACCELEROMETER));
-//		sensorList.add(Integer.valueOf(UniversalSensor.TYPE_LIGHT));
+
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, accRate, bundleSize);
         mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT, lightRate, bundleSize);
         mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
@@ -112,8 +115,12 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	}
 
 	@Override
-	public void setRate(int sType, int rate) {
-		this.rate = rate;
+	public void setRate(int sType, int rate, int bundleSize) {
+		Log.i(tag, "setRate:: sType: " + sType + ", rate: " + rate + ", bundleSize: " + bundleSize);
+		if (rate == 0)
+			this.rate = 0;
+		else
+			this.rate = 1000/rate;
 	}
 
 

@@ -32,7 +32,7 @@ public class Device implements Parcelable{
 	{
 		this.devID      = new String(device.devID);
 		this.vendorID   = new String(device.vendorID);
-		this.mSensor    = new HashMap<Integer, ArrayList<Integer>>(device.mSensor);
+		this.mSensor    = new HashMap<Integer, ArrayList<Integer>>();
 	}
 
 	public Device(String vendorID, String devID)
@@ -62,7 +62,7 @@ public class Device implements Parcelable{
 		this.vendorID = vendorID;
 	}
 	
-	synchronized public boolean addSensor(int sType, int rate, int bundleSize)
+	synchronized public boolean addSensor(int sType, int rate[], int bundleSize[])
 	{
 		boolean flag = false;
 		ArrayList<Integer> val = null;
@@ -70,20 +70,24 @@ public class Device implements Parcelable{
 		if (!mSensor.containsKey(sType)) {
 			mSensor.put(sType, new ArrayList<Integer>());
 			mSensor.get(sType).add(Integer.valueOf(1));
-			mSensor.get(sType).add(Integer.valueOf(rate));
-			mSensor.get(sType).add(Integer.valueOf(bundleSize));
+			for (int i = 0; i < rate.length; i++)
+				mSensor.get(sType).add(Integer.valueOf(rate[i]));
+			mSensor.get(sType).add(Integer.valueOf(0xcc));
+			for (int i = 0; i < bundleSize.length; i++)
+				mSensor.get(sType).add(Integer.valueOf(bundleSize[i]));
 			flag = true;
-		} else {
-			val = mSensor.get(sType);
-			if (val.get(1) != rate) {
-				val.set(1, Integer.valueOf(rate));
-				flag = true;
-			}
-			if (val.get(2) != bundleSize) {
-				val.set(2, Integer.valueOf(bundleSize));
-				flag = true;
-			}
 		}
+//		else {
+//			val = mSensor.get(sType);
+//			if (val.get(1) != rate) {
+//				val.set(1, Integer.valueOf(rate));
+//				flag = true;
+//			}
+//			if (val.get(2) != bundleSize) {
+//				val.set(2, Integer.valueOf(bundleSize));
+//				flag = true;
+//			}
+//		}
 		return flag;
 	}
 
@@ -120,12 +124,12 @@ public class Device implements Parcelable{
 	{
 		return mSensor;
 	}
-	
+
 	synchronized public boolean isEmpty()
 	{
 		return mSensor.isEmpty();
 	}
-	
+
 	@Override
 	public int describeContents() {
 		return 0;
@@ -140,7 +144,7 @@ public class Device implements Parcelable{
 		}
 		return sensors;
 	}
-	
+
 	public ArrayList<Integer> getArrayList(int[] sensors)
 	{
 		ArrayList<Integer> alist = new ArrayList<Integer>();

@@ -91,15 +91,19 @@ public class UniversalSensorManager {
 		{
 			this.mlistener = mlistener;
 		}
-		
+
 		@Override
-		public void onSensorChanged(SensorParcel event) throws RemoteException {
-			i++;
-			if (i==50) {
-				Log.i(tag, "onSensorChanged");
-				mlistener.onSensorChanged(new UniversalSensorEvent(event));
-				i = 0;
-			}
+		public void onSensorChanged(SensorParcel[] sp) throws RemoteException {
+			UniversalSensorEvent[] event = new UniversalSensorEvent[sp.length];
+			for (i = 0; i < sp.length; i++)
+				event[i] = new UniversalSensorEvent(sp[i]);
+			mlistener.onSensorChanged(event);
+//			i++;
+//			if (i==50) {
+//				Log.i(tag, "onSensorChanged " + event.length);
+//				mlistener.onSensorChanged(new UniversalSensorEvent(event));
+//				i = 0;
+//			}
 		}
 
 		@Override
@@ -110,8 +114,6 @@ public class UniversalSensorManager {
 		@Override
 		public void notifySensorChanged(String devID, int sType, int action)
 				throws RemoteException {
-			// TODO Auto-generated method stub
-			
 		}
 	}
 }

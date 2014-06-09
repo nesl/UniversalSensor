@@ -1,11 +1,9 @@
 package com.ucla.nesl.universalservice;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import android.R.string;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
@@ -19,32 +17,35 @@ public class UniversalServiceSensor {
 	private static String tag = UniversalServiceSensor.class.getCanonicalName();
 	public  int sType;
 	private String mSensorKey;
-	public  int maxRate;
-	private int bundleSize;
+	public  int[] rateRange;
+	private int[] bundleSize;
 	private int sRate;
-	private float sUpdateInterval;
+	private int sBundleSize;
 	UniversalServiceDevice mdevice;
 	private Map<String, _Listener> listenersList = new HashMap<String, UniversalServiceSensor._Listener>();
 	private Map<UniversalServiceListener, Integer> listenerSensorRate = new HashMap<UniversalServiceListener, Integer>();
-	
-	public UniversalServiceSensor(UniversalServiceDevice mdevice, String mSensorKey, int sType, int rate, int bundleSize)
+
+	public UniversalServiceSensor(UniversalServiceDevice mdevice, String mSensorKey, int sType, int[] rate, int[] bundleSize)
 	{
 		this.mdevice = mdevice;
 		this.sType = sType;
 		this.mSensorKey = new String(mSensorKey);
-		this.maxRate = rate;
-		this.bundleSize = bundleSize;
-		this.sRate  = 0;
-		this.sUpdateInterval = 0;
+		this.rateRange = rate.clone();
+		Arrays.sort(this.rateRange);
+		this.bundleSize = bundleSize.clone();
+		Arrays.sort(this.bundleSize);
+		Log.d(tag, "rateRange: " + Arrays.toString(rateRange) + ", bundleSize: " + Arrays.toString(bundleSize));
+		this.sRate  = this.rateRange[0];
+		this.sBundleSize = this.bundleSize[0];
 //		listenersList = new ArrayList<UniversalServiceListener>();
 	}
 
-	public boolean update(int maxRate, int bundleSize)
-	{
-		this.maxRate = maxRate;
-		this.bundleSize = bundleSize;
-		return true;
-	}
+//	public boolean update(int rateRange, int bundleSize)
+//	{
+//		this.rateRange = rateRange;
+//		this.bundleSize = bundleSize;
+//		return true;
+//	}
 
 /*
 	@SuppressWarnings("unchecked")
@@ -56,58 +57,86 @@ public class UniversalServiceSensor {
 	}
 */
 	
-	private void updateSamplingParams()
+	private void updateDriverRate()
 	{
-		boolean flag = true;
-		_Listener mlistener;
-		Handler   mhandler;
-		synchronized (listenersList) {
-			for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
-				mlistener = entry.getValue();
-				if (flag) {
-					sRate = mlistener.getRate();
-					sUpdateInterval = mlistener.getUpdateInterval();
-				} else {
-					if (sRate < mlistener.getRate())
-						sRate = mlistener.getRate();
-					if (sUpdateInterval > mlistener.getUpdateInterval())
-						sUpdateInterval = mlistener.getUpdateInterval();
-				}
-			}
-			for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
-				Bundle bundle = new Bundle();
-				bundle.putString(UniversalConstants.sType, mSensorKey);
-				bundle.putInt(UniversalConstants.rate, sRate);
-				bundle.putFloat(UniversalConstants.updateInterval, sUpdateInterval);
-				
-				mhandler = entry.getValue().getHandler();
-				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_UpdateSamplingParam, bundle));
-			}
-		}
-		//updateDriver
 		try {
-			mdevice.mDriverStub.setRate(sType, sRate, sUpdateInterval);
+			mdevice.mDriverStub.setRate(sType, sRate, sBundleSize);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+	private void updateSamplingParams()
+	{
+		int     tRate = sRate,
+				tBundleSize = sBundleSize;
+		boolean   flag = true;
+		_Listener mlistener;
+		Handler   mhandler;
+		synchronized (listenersList) {
+			if (listenersList.isEmpty()) {
+				sRate = 0;
+				sBundleSize = 0;
+			} else {
+				for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
+					mlistener = entry.getValue();
+					if (flag) {
+						tRate = mlistener.getRate();
+						tBundleSize = mlistener.getBundleSize();
+					} else {
+						if (tRate < mlistener.getRate())
+							tRate = mlistener.getRate();
+						if (tBundleSize > mlistener.getBundleSize())
+							tBundleSize = mlistener.getBundleSize();
+					}
+				}
+				Log.d(tag, "Calculated rate:bundleSize::" + tRate + ":" + tBundleSize);
+				// Now figure out the next best possible rate at which the Sensor can send
+				for (int i = 0; i < rateRange.length; i++) {
+					if (tRate <= rateRange[i]) {
+						sRate = rateRange[i];
+						break;
+					}
+				}
+				
+				for (int i = 0; i < bundleSize.length; i++) {
+					if (tBundleSize <= bundleSize[i]) {
+						sBundleSize = bundleSize[i];
+						break;
+					}
+				}
+				
+				for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
+					Bundle bundle = new Bundle();
+					bundle.putString(UniversalConstants.sType, mSensorKey);
+					bundle.putInt(UniversalConstants.rate, sRate);
+					bundle.putInt(UniversalConstants.bundleSize, sBundleSize);
+					
+					mhandler = entry.getValue().getHandler();
+					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_UpdateSamplingParam, bundle));
+				}
+			}
+		}
+		//updateDriver
+		updateDriverRate();
+	}
 
 	// This function is called by the listener to add itself into the
 	// list of registeredListener of this sensor type
-	public void linkListener(String listenerID, UniversalServiceListener mUniversalListener, int rate, float updateInterval)
+	public boolean linkListener(String listenerID, UniversalServiceListener mUniversalListener, int rate, int bundleSize)
 	{
 		_Listener mListener = null;
 		synchronized (listenersList) {
 			if (!listenersList.containsKey(listenerID)) {
-				mListener = new _Listener(listenerID, mUniversalListener, rate, updateInterval);
+				mListener = new _Listener(listenerID, mUniversalListener, rate, bundleSize);
 				listenersList.put(listenerID, mListener);
 			} else {
 				mListener = listenersList.get(listenerID);
-				mListener.update(rate, updateInterval);
+				mListener.update(rate, bundleSize);
 			}
 		}
 		updateSamplingParams();
+		return true;
 	}
 
 	// This function is called by the listener to remove itself from the
@@ -176,21 +205,21 @@ public class UniversalServiceSensor {
 	{
 		String					 listenerID = null;
 		int 					 lRate	   = 0;
-		float				     lUpdateInterval = 0;
+		int				         lbundleSize = 0;
 		UniversalServiceListener mListener = null;
 		
-		public _Listener(String listenerID, UniversalServiceListener mListener, int lRate, float lUpdateInterval)
+		public _Listener(String listenerID, UniversalServiceListener mListener, int lRate, int lbundleSize)
 		{
 			this.listenerID = new String(listenerID);
 			this.mListener  = mListener;
 			this.lRate      = lRate;
-			this.lUpdateInterval = lUpdateInterval;
+			this.lbundleSize = lbundleSize;
 		}
 		
-		public void update(int lrate, float lUpdateInterval)
+		public void update(int lRate, int lbundleSize)
 		{
 			this.lRate = lRate;
-			this.lUpdateInterval = lUpdateInterval;
+			this.lbundleSize = lbundleSize;
 		}
 		
 		public int getRate()
@@ -198,9 +227,9 @@ public class UniversalServiceSensor {
 			return lRate;
 		}
 		
-		public float getUpdateInterval()
+		public int getBundleSize()
 		{
-			return lUpdateInterval;
+			return lbundleSize;
 		}
 		
 		public Handler getHandler()

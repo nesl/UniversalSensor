@@ -15,7 +15,7 @@ public interface UniversalEventListener {
      *  
      * @param event the {@link android.hardware.SensorEvent SensorEvent}.                
      */                                                                                  
-    public void onSensorChanged(UniversalSensorEvent event);                                      
+    public void onSensorChanged(UniversalSensorEvent[] event);                                      
     
     /**
      * Called when the accuracy of a sensor has changed.

@@ -12,6 +12,6 @@ public class UniversalConstants {
 	public static final int MSG_UnregisterListener = 6;
 	
 	public static final String rate = "rate";
-	public static final String updateInterval = "updateInterval";
+	public static final String bundleSize = "bundleSize";
 	public static final String sType = "sType";
 }

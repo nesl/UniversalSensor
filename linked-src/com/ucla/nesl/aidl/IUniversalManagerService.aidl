@@ -10,7 +10,7 @@ interface IUniversalManagerService {
 	java.util.List<Device> listDevices();
 	boolean registerListener(IUniversalSensorManager mManager, String devID, int sType, int rateUs, int bundleSize);
 	boolean unregisterListener(String devID, int sType);
-	boolean registerDriver(in Device device, IUniversalDriverManager mDriver, int sType, int rate, int bundleSize);
+	boolean registerDriver(in Device device, IUniversalDriverManager mDriver, int sType, in int[] rate, in int[] bundleSize);
 	boolean unregisterDriver(String devID, int sType);
 	void registerNotification(IUniversalSensorManager mManager);
 	oneway void onSensorChanged(in SensorParcel[] event, int length);

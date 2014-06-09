@@ -1,5 +1,6 @@
 package com.ucla.nesl.universalservice;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import android.os.Bundle;
@@ -55,7 +56,7 @@ public class UniversalServiceListener extends Thread {
 	private void linkSensor(HashMap<String, Object> mMap)
 	{
 		int						rate 	 	= -1;
-		float					updateInterval = 0;
+		int 					bundleSize  = 0;
 		String 					sensorID 	= null;
 		UniversalServiceSensor 	universalSensor = null; 
 		_Sensor 				mSensor		= null;
@@ -63,14 +64,20 @@ public class UniversalServiceListener extends Thread {
 		sensorID 		= (String) mMap.get("key");
 		universalSensor = (UniversalServiceSensor) mMap.get("value");
 		rate	 		= (Integer) mMap.get("rate");
-		updateInterval 	= (Integer) mMap.get("bundleSize");
-
-		mSensor = new _Sensor(sensorID, universalSensor, rate, updateInterval);
+		bundleSize 		= (Integer) mMap.get("bundleSize");
 
 		synchronized (sensorMap) {
-			sensorMap.put(sensorID, mSensor);
+			if (!sensorMap.containsKey(sensorID)) {
+				mSensor = new _Sensor(this, mlistener, sensorID, universalSensor, rate, bundleSize);
+				sensorMap.put(sensorID, mSensor);
+			} else {
+				mSensor = sensorMap.get(sensorID);
+				mSensor.updateListenerParam(rate, bundleSize);
+			}
 		}
-		universalSensor.linkListener(""+callingPid, this, rate, updateInterval);
+
+//		universalSensor.linkListener(""+callingPid, this, rate, bundleSize);
+		mSensor.linkListener();
 	}
 
 	/**
@@ -91,7 +98,7 @@ public class UniversalServiceListener extends Thread {
 		mUniversalServiceSensor = mSensor.getRegisteredSensor();
 		try {
 			mlistener.notifySensorChanged(mUniversalServiceSensor.getDevID(),
-					mUniversalServiceSensor.sType, UniversalConstants.ACTION_UNREGISTER);
+			mUniversalServiceSensor.sType, UniversalConstants.ACTION_UNREGISTER);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -127,6 +134,13 @@ public class UniversalServiceListener extends Thread {
 
 	public void onSensorChanged(SensorParcel[] event, int length)
 	{
+		_Sensor mSensor = null;
+		synchronized (sensorMap) {
+			if (sensorMap.containsKey(event[0].mSensorKey)) {
+				mSensor = sensorMap.get(event[0].mSensorKey);
+				mSensor.onSensorChaged(event, length);
+			}
+		}
 //		try {
 //			mlistener.onSensorChanged(event);
 //		} catch (RemoteException e) {
@@ -157,10 +171,13 @@ public class UniversalServiceListener extends Thread {
 		_Sensor mSensor = null;
 		String mSensorKey = bundle.getString(UniversalConstants.sType);
 		int    sRate = bundle.getInt(UniversalConstants.rate);
-		float  sUpdateInterval = bundle.getFloat(UniversalConstants.updateInterval);
-		if (sensorMap.containsKey(mSensorKey)) {
-			mSensor = sensorMap.get(mSensorKey);
-			mSensor.updateSamplingParam(sRate, sUpdateInterval);
+		int    sBundleSize = bundle.getInt(UniversalConstants.bundleSize);
+		
+		synchronized (sensorMap) {
+			if (sensorMap.containsKey(mSensorKey)) {
+				mSensor = sensorMap.get(mSensorKey);
+				mSensor.updateSamplingParam(sRate, sBundleSize);
+			}
 		}
 	}
 
@@ -205,31 +222,86 @@ public class UniversalServiceListener extends Thread {
 	
 	private class _Sensor
 	{
-		int						lRate 	 	    = -1;
-		float					lUpdateInterval = 0;
-		int						sRate 	 	    = -1;
-		float					sUpdateInterval = 0;
+		int 					counter     = 0;
+		int						lRate 	    = -1;
+		int  					lbundleSize = 0;
+		int						sRate 	    = -1;
+		int					    sbundleSize = 0;
 		String 					sensorID 	= null;
-		UniversalServiceSensor 	mSensor  	= null; 
+		ArrayList<SensorParcel> eventQueue  = null;
+		UniversalServiceSensor 	mSensor  	= null;
+		UniversalServiceListener parent     = null;
+		IUniversalSensorManager mlistener    = null;
 
-		public _Sensor(String sensorID, UniversalServiceSensor mSensor,
-				int lRate, float lUpdateInterval)
+		public _Sensor(UniversalServiceListener parent, IUniversalSensorManager mlistener,
+				String sensorID, UniversalServiceSensor mSensor, int lRate, int bundleSize)
 		{
-			this.sensorID = new String(sensorID);
-			this.mSensor  = mSensor;
-			this.lRate    = lRate;
-			this.lUpdateInterval = lUpdateInterval;
+			this.parent    = parent;
+			this.mlistener = mlistener;
+			this.sensorID  = new String(sensorID);
+			this.mSensor   = mSensor;
+			this.lRate     = lRate;
+			this.lbundleSize = bundleSize;
+			eventQueue 		= new ArrayList<SensorParcel>();
 		}
 		
-		public void updateSamplingParam(int sRate, float sUpdateInterval)
+		private void updatecounter()
+		{
+			counter = (int) Math.ceil(1.0*sRate/lRate);
+		}
+		
+		public void updateListenerParam(int lRate, int lBundleSize)
+		{
+			this.lRate     = lRate;
+			this.lbundleSize = lBundleSize;
+			updatecounter();
+		}
+		
+		public void updateSamplingParam(int sRate, int sBundleSize)
 		{
 			this.sRate    = sRate;
-			this.sUpdateInterval = sUpdateInterval;
+			this.sbundleSize = sBundleSize;
+			updatecounter();
 		}
 		
 		public UniversalServiceSensor getRegisteredSensor()
 		{
 			return mSensor;
+		}
+		
+		public boolean linkListener()
+		{
+			return mSensor.linkListener(""+parent.callingPid, parent, lRate, lbundleSize);
+		}
+		
+		private void sendData()
+		{
+			SensorParcel[] eventBundle = null;
+			
+			while (eventQueue.size() >= lbundleSize) {
+				eventBundle = new SensorParcel[lbundleSize];
+				for (int i = 0; i < lbundleSize; i++) {
+					eventBundle[i] = eventQueue.remove(0);
+				}
+				try {
+					mlistener.onSensorChanged(eventBundle);
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		public void onSensorChaged(SensorParcel[] sp, int length)
+		{
+			for (int i = 0; i < sp.length; i++) {
+				counter--;
+				if (counter <= 0) {
+					eventQueue.add(sp[i]);
+					updatecounter();
+				}
+			}
+			sendData();
 		}
 	}
 }

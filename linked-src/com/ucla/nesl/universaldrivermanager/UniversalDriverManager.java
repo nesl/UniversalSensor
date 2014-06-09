@@ -75,7 +75,7 @@ public class UniversalDriverManager {
 	 * @param bundleSize Number of samples sent in one bundle
 	 * @return Returns true on success and false on failure
 	 */
-	public boolean registerDriver(UniversalDriverListener mlistener, int sType, int rate, int bundleSize)
+	public boolean registerDriver(UniversalDriverListener mlistener, int sType, int rate[], int bundleSize[])
 	{
 		// devID null means that the connection establishment is not yet complete
 		// TODO: wait and retry after sometime
@@ -95,18 +95,6 @@ public class UniversalDriverManager {
 		Log.d(tag, "Registering new sensor, vendor id: " + device.getVendorID() + ", sensor type:" + sType);
 		try {
 			remoteConnection.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
-//			if (once) {
-//				float[] val = new float[3];
-//				val[0] = 0.01f;
-//				val[1] = 0.02f;
-//				val[2] = 0.03f;
-//				UniversalSensorEvent[] event = new UniversalSensorEvent[3];
-//				event[0] = new UniversalSensorEvent(1, val, 100234);
-//				event[1] = new UniversalSensorEvent(2, val, 100235);
-//				event[2] = new UniversalSensorEvent(3, val, 100236);
-//				remoteConnection.pushArray(event);
-//				once = false;
-//			}
 		} catch (RemoteException e) {
 			return false;
 			// Also remove the sensor from registered list
@@ -135,8 +123,8 @@ public class UniversalDriverManager {
 		}
 
 		@Override
-		public void setRate(int sType, int rate, float updateInterval) throws RemoteException {
-			this.mlistener.setRate(sType, rate);
+		public void setRate(int sType, int rate, int bundleSize) throws RemoteException {
+			this.mlistener.setRate(sType, rate, bundleSize);
 		}
 
 	}

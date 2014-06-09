@@ -96,7 +96,7 @@ public class UniversalServiceDevice extends Device {
 		return flag;
 	}
 	
-	public boolean registerSensor(String mSensorKey, int sType, int maxRate, int bundleSize)
+	public boolean registerSensor(String mSensorKey, int sType, int[] maxRate, int[] bundleSize)
 	{
 		UniversalServiceSensor mSensor = null;
 		
@@ -104,9 +104,11 @@ public class UniversalServiceDevice extends Device {
 		if (mSensor == null) {
 			mSensor = new UniversalServiceSensor(this, mSensorKey, sType, maxRate, bundleSize);
 			addRegisteredSensor(mSensorKey, mSensor);
-		} else {
-			 mSensor.update(maxRate, bundleSize);
-		}
+		} 
+//		else {
+//			 mSensor.update(maxRate, bundleSize);
+//		}
+		// Here we are expecting the driver to send the array in descending order
 		super.addSensor(sType, maxRate, bundleSize);
 		
 		return true;

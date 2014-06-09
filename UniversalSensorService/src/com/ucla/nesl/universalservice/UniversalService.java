@@ -8,11 +8,9 @@ import java.util.Random;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.provider.SyncStateContract.Helpers;
 import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
@@ -21,7 +19,6 @@ import com.ucla.nesl.aidl.IUniversalManagerService;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalConstants;
-import com.ucla.nesl.lib.UniversalSensorHelper;
 import com.ucla.nesl.lib.UniversalSensorNameMap;
 
 public class UniversalService extends Service {
@@ -167,7 +164,7 @@ public class UniversalService extends Service {
 
 		@Override
 		public boolean registerDriver(Device mdevice, IUniversalDriverManager mDriverListener, 
-				int sType, int maxRate, int bundleSize) throws RemoteException {
+				int sType, int[] maxRate, int[] bundleSize) throws RemoteException {
 			String mSensorKey = null;
 			UniversalServiceDevice mUniversalDevice = null;
 
@@ -413,7 +410,8 @@ public class UniversalService extends Service {
 		public void onSensorChanged(SensorParcel[] event, int length)
 				throws RemoteException {
 			String key = generateSensorKey(event[0].devID, event[0].sType);
-
+			event[0].mSensorKey = key;
+			
 			UniversalServiceSensor msensor = getRegisteredDevice(event[0].devID).getRegisteredSensor(key);
 			if(msensor == null) {
 				Log.i(tag, "msensor is null " + key);

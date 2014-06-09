@@ -39,7 +39,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 	}
 
 	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub,
-			int sType, int rate, int bundleSize) throws RemoteException
+			int sType, int rate[], int bundleSize[]) throws RemoteException
 	{
 		return service.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
 	}
