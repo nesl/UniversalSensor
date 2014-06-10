@@ -2,8 +2,10 @@ package com.ucla.nesl.universalservice;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import android.os.Bundle;
+import android.os.DeadObjectException;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -18,6 +20,7 @@ import com.ucla.nesl.lib.UniversalConstants;
 
 public class UniversalServiceListener extends Thread {
 	private static String tag = UniversalServiceListener.class.getCanonicalName();
+	private UniversalManagerService mService;
 	private IUniversalSensorManager mlistener;
 	private HashMap<String, _Sensor> sensorMap = new HashMap<String, _Sensor>();
 	public int callingPid;
@@ -31,9 +34,10 @@ public class UniversalServiceListener extends Thread {
 		callingPid = -1;
 	}
 
-	public UniversalServiceListener(IUniversalSensorManager listener, int callingPid)
+	public UniversalServiceListener(UniversalManagerService mService, IUniversalSensorManager listener, int callingPid)
 	{
-		this.mlistener = listener;
+		this.mService   = mService;
+		this.mlistener  = listener;
 		this.callingPid = callingPid;
 	}
 
@@ -125,6 +129,19 @@ public class UniversalServiceListener extends Thread {
 	//		return mlistener;
 	//	}
 	//	
+	
+	public void unregister()
+	{
+		HashMap<String, _Sensor> _mSensorMap = null;
+		synchronized (sensorMap) {
+			_mSensorMap = sensorMap;
+			sensorMap   = new HashMap<String, _Sensor>();
+		}
+		
+		for (Map.Entry<String, _Sensor> entry : _mSensorMap.entrySet()) {
+			entry.getValue().getRegisteredSensor().unlinkListner(getID());
+		}
+	}
 	public boolean isEmpty()
 	{
 		synchronized (sensorMap) {
@@ -154,6 +171,11 @@ public class UniversalServiceListener extends Thread {
 		threadLooper.quit();
 	}
 
+	public String getID()
+	{
+		return mService.generateListenerKey(callingPid);
+	}
+	
 	private void notifyDeviceChange(Device mdevice)
 	{
 		try {
@@ -285,8 +307,11 @@ public class UniversalServiceListener extends Thread {
 				}
 				try {
 					mlistener.onSensorChanged(eventBundle);
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
+				} catch (DeadObjectException e) {
+					Log.e(tag, "Listener " + parent.getId() + " is dead, cleaning it up");
+					Handler mhandler = parent.mService.getHandler();
+					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_UnregisterListener, parent.getID()));
+				}catch (RemoteException e) {
 					e.printStackTrace();
 				}
 			}

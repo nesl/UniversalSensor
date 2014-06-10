@@ -1,18 +1,20 @@
 package com.ucla.nesl.universalservice;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.os.Handler;
+
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
-import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;
 
 public class UniversalServiceDevice extends Device {
 	// Ibinder handler used to communicate with the driver
 	public IUniversalDriverManager mDriverStub;
 
+	private UniversalManagerService mService;
+	
 	// This arraylist object maintains the list of all the sensors registered
 	// by this device. So, two things can be done on sensor count zero
 	// a) remove the device from the listing
@@ -20,8 +22,10 @@ public class UniversalServiceDevice extends Device {
 	//	private ArrayList<UniversalServiceSensor> sensorList = new ArrayList<UniversalServiceSensor>();
 	private HashMap<String, UniversalServiceSensor> registeredSensors = new HashMap<String, UniversalServiceSensor>();
 
-	public UniversalServiceDevice(Device device, IUniversalDriverManager mDriverStub) {
+	public UniversalServiceDevice(UniversalManagerService mService, Device device, IUniversalDriverManager mDriverStub)
+	{
 		super(device);
+		this.mService    = mService;
 		this.mDriverStub = mDriverStub;
 	}
 
@@ -73,6 +77,11 @@ public class UniversalServiceDevice extends Device {
 		}
 	}
 
+	public Handler getServiceHandler()
+	{
+		return mService.getHandler();
+	}
+	
 	public boolean unregisterSensor(int sType, String mSensorKey)
 	{
 		boolean flag = true;

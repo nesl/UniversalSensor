@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.os.Bundle;
+import android.os.DeadObjectException;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
@@ -61,11 +62,15 @@ public class UniversalServiceSensor {
 	{
 		try {
 			mdevice.mDriverStub.setRate(sType, sRate, sBundleSize);
+		} catch (DeadObjectException e) {
+			Handler mHandler = mdevice.getServiceHandler();
+			mHandler.sendMessage(mHandler.obtainMessage(UniversalConstants.MSG_UnregisterDriver, mdevice.getDevID()));
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
 	private void updateSamplingParams()
 	{
 		int     tRate = sRate,
