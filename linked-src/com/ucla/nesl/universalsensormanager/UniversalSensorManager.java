@@ -98,12 +98,6 @@ public class UniversalSensorManager {
 			for (i = 0; i < sp.length; i++)
 				event[i] = new UniversalSensorEvent(sp[i]);
 			mlistener.onSensorChanged(event);
-//			i++;
-//			if (i==50) {
-//				Log.i(tag, "onSensorChanged " + event.length);
-//				mlistener.onSensorChanged(new UniversalSensorEvent(event));
-//				i = 0;
-//			}
 		}
 
 		@Override

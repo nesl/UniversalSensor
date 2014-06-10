@@ -2,11 +2,12 @@ package com.ucla.nesl.aidl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import android.R.integer;
 import android.hardware.Sensor;
-import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -14,6 +15,14 @@ public class Device implements Parcelable{
 	public int test = 0;
 	private String devID;
 	private String vendorID;
+	/**
+	 *  Packet information:
+	 *  Using a stream of integers
+	 *  first integer 1
+	 *  Stream of integers containing the information about the range of Rates
+	 *  Delimiter 0xCC
+	 *  Stream of integers containing the different BundleSize values supported by the hardware
+	 */
 	private HashMap<Integer, ArrayList<Integer>> mSensor = new HashMap<Integer, ArrayList<Integer>>();
 
 	public Device()
@@ -100,6 +109,41 @@ public class Device implements Parcelable{
 		return rate;
 	}
 
+	/**
+	 * return index of 0Xcc
+	 */
+	private int rateEndIndex(ArrayList<Integer> stream)
+	{
+		return stream.indexOf(Integer.valueOf(0xcc));
+	}
+	
+	private int bundleSizeEndIndex(ArrayList<Integer> stream)
+	{
+		return stream.size();
+	}
+	
+	synchronized public List<Integer> getRateList(int sType)
+	{
+		ArrayList<Integer> pk = null;
+		
+		if (mSensor.containsKey(sType)) {
+			pk = mSensor.get(sType);
+			return pk.subList(1, rateEndIndex(pk));
+		}
+		return null;
+	}
+	
+	synchronized public List<Integer> getBundleSizeList(int sType)
+	{
+		ArrayList<Integer> pk = null;
+		
+		if (mSensor.containsKey(sType)) {
+			pk = mSensor.get(sType);
+			return pk.subList(rateEndIndex(pk) + 1, bundleSizeEndIndex(pk));
+		}
+		return null;
+	}
+	
 	private void _removeSensor(HashMap<String, Object> map)
 	{
 		return;
@@ -120,9 +164,15 @@ public class Device implements Parcelable{
 			return false;
 	}
 
-	synchronized public HashMap<Integer, ArrayList<Integer>> getSensorList()
+	synchronized public ArrayList<Integer> getSensorList()
 	{
-		return mSensor;
+		ArrayList<Integer> sList = new ArrayList<Integer>();
+		
+		for (Map.Entry<Integer, ArrayList<Integer>> entry: mSensor.entrySet())
+		{
+			sList.add(entry.getKey());
+		}
+		return sList;
 	}
 
 	synchronized public boolean isEmpty()

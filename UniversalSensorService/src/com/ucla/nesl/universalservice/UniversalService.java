@@ -299,6 +299,12 @@ public class UniversalService extends Service {
 				return false;
 			}
 
+			// Check if this is a supported Rate and bundlesize
+			if (!mSensor.checkParams(rate, bundleSize)) {
+				Log.e(tag, "Incorrect rate or bundleSize, registerListener failed");
+				return false;
+			}
+			
 			// Add the listener to the map if it already doesn't exists
 			if (!hasRegisteredListener(mListenerKey)) {
 				_registerListener(listenerPid, mListenerKey, mManager);
@@ -322,14 +328,6 @@ public class UniversalService extends Service {
 
 			Log.i(tag, "registering listener " +  Binder.getCallingPid() + ", " + sType);
 
-			// now enable that particular devices sensor
-			// This functionality must be moved to universalservicesensor class
-			// inside the function linkListener
-//			try {
-//				setDriverSensorRate(devID, sType, msensor.getNextRate());
-//			} catch (RemoteException e) {
-//				return false;
-//			}
 			return true;
 		}
 

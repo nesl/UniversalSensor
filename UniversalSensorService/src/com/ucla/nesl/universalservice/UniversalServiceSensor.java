@@ -17,8 +17,8 @@ public class UniversalServiceSensor {
 	private static String tag = UniversalServiceSensor.class.getCanonicalName();
 	public  int sType;
 	private String mSensorKey;
-	public  int[] rateRange;
-	private int[] bundleSize;
+	public  int[] rateList;
+	private int[] bundleSizeList;
 	private int sRate;
 	private int sBundleSize;
 	UniversalServiceDevice mdevice;
@@ -30,13 +30,13 @@ public class UniversalServiceSensor {
 		this.mdevice = mdevice;
 		this.sType = sType;
 		this.mSensorKey = new String(mSensorKey);
-		this.rateRange = rate.clone();
-		Arrays.sort(this.rateRange);
-		this.bundleSize = bundleSize.clone();
-		Arrays.sort(this.bundleSize);
-		Log.d(tag, "rateRange: " + Arrays.toString(rateRange) + ", bundleSize: " + Arrays.toString(bundleSize));
-		this.sRate  = this.rateRange[0];
-		this.sBundleSize = this.bundleSize[0];
+		this.rateList = rate.clone();
+		Arrays.sort(this.rateList);
+		this.bundleSizeList = bundleSize.clone();
+		Arrays.sort(this.bundleSizeList);
+		Log.d(tag, "rateList: " + Arrays.toString(rateList) + ", bundleSize: " + Arrays.toString(bundleSizeList));
+		this.sRate  = this.rateList[0];
+		this.sBundleSize = this.bundleSizeList[0];
 //		listenersList = new ArrayList<UniversalServiceListener>();
 	}
 
@@ -92,16 +92,16 @@ public class UniversalServiceSensor {
 				}
 				Log.d(tag, "Calculated rate:bundleSize::" + tRate + ":" + tBundleSize);
 				// Now figure out the next best possible rate at which the Sensor can send
-				for (int i = 0; i < rateRange.length; i++) {
-					if (tRate <= rateRange[i]) {
-						sRate = rateRange[i];
+				for (int i = 0; i < rateList.length; i++) {
+					if (tRate <= rateList[i]) {
+						sRate = rateList[i];
 						break;
 					}
 				}
 				
-				for (int i = 0; i < bundleSize.length; i++) {
-					if (tBundleSize <= bundleSize[i]) {
-						sBundleSize = bundleSize[i];
+				for (int i = 0; i < bundleSizeList.length; i++) {
+					if (tBundleSize <= bundleSizeList[i]) {
+						sBundleSize = bundleSizeList[i];
 						break;
 					}
 				}
@@ -201,6 +201,33 @@ public class UniversalServiceSensor {
 		return true;
 	}
 	
+	/** 
+	 * Check if the rate and bundlesize requested by the listener are valid
+	 * @param mRate
+	 * @param mBundleSize
+	 * @return
+	 */
+	synchronized public boolean checkParams(int mRate, int mBundleSize)
+	{
+		boolean rflag = false, bflag = false;
+		
+		for (int i : rateList)
+		{
+			if (i % mRate == 0) {
+				rflag = true;
+				break;
+			}
+		}
+		
+		for (int i : bundleSizeList) {
+			if (i % mBundleSize == 0) {
+				bflag = true;
+				break;
+			}
+		}
+		return rflag && bflag;
+	}
+
 	private class _Listener
 	{
 		String					 listenerID = null;

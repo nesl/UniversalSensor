@@ -82,8 +82,9 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             		Log.i(tag, device.getVendorID() +":" + device.getDevID());
 
 
-            		for (Map.Entry<Integer, ArrayList<Integer>> entry: device.getSensorList().entrySet())
-            			Log.i(tag, UniversalSensorNameMap.getName(entry.getKey()) + ", max rate" + entry.getValue().get(1));
+            		for (Integer i : device.getSensorList())
+            			Log.i(tag, UniversalSensorNameMap.getName(i) + ", rate" + device.getRateList(i) + 
+            					", bundleSize supported: " + device.getBundleSizeList(i));
             	}
             	registerNotification();
             }
