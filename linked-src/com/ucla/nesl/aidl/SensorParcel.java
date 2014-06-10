@@ -15,7 +15,7 @@ public class SensorParcel implements Parcelable {
 	public SensorParcel()
 	{
 	}
-	
+
 	public SensorParcel(SensorParcel sp)
 	{
 		this.devID = new String(sp.devID);
@@ -46,7 +46,7 @@ public class SensorParcel implements Parcelable {
 		}
 
 	}
-	
+
 	public SensorParcel(int sType, float[] values, float timestamp) {
 		this.sType = sType;
 		this.timestamp = timestamp;

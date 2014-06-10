@@ -16,7 +16,7 @@ public class UniversalDriverManager {
 	private String UNIVERSALServiceClass = "com.ucla.nesl.universalservice.UniversalService";
 	private Context context;
 	private UniversalDriverRemoteConnection remoteConnection;
-//	private UniversalDriverManager mManager = null;
+	//	private UniversalDriverManager mManager = null;
 	private Device device = null;
 	private String devID  = null;
 	private String vendorID = null;
@@ -25,10 +25,10 @@ public class UniversalDriverManager {
 
 	public static UniversalDriverManager create(Context context, String vendorID)
 	{
-//		if (mManager != null)
-//			return mManager;
-//		mManager = new UniversalDriverManager(context);
-//		return mManager;
+		//		if (mManager != null)
+		//			return mManager;
+		//		mManager = new UniversalDriverManager(context);
+		//		return mManager;
 		return new UniversalDriverManager(context, vendorID);
 	}
 
@@ -40,12 +40,12 @@ public class UniversalDriverManager {
 		mDriverManagerStub = null;
 		connectRemote();
 	}
-	
+
 	public String getVendorID()
 	{
 		return vendorID;
 	}
-	
+
 	private void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");
@@ -58,7 +58,7 @@ public class UniversalDriverManager {
 		this.devID = devID;
 		device.setDevID(devID);
 	}
-	
+
 	public Boolean push(UniversalSensorEvent[] mSensor)
 	{
 		for (int i = 0; i < mSensor.length; i++)
@@ -88,10 +88,10 @@ public class UniversalDriverManager {
 			Log.i(tag, "sType " + sType + " already registered");
 			return false;
 		}
-		
+
 		if (mDriverManagerStub == null)
 			mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);
-		
+
 		Log.d(tag, "Registering new sensor, vendor id: " + device.getVendorID() + ", sensor type:" + sType);
 		try {
 			remoteConnection.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
@@ -112,7 +112,7 @@ public class UniversalDriverManager {
 		} catch (RemoteException e) {return false;}
 		return true;
 	}
-	
+
 	public class UniversalDriverManagerStub extends IUniversalDriverManager.Stub {
 		private UniversalDriverManager dManager;
 		UniversalDriverListener mlistener;

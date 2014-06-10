@@ -24,13 +24,13 @@ public class UniversalServiceListener extends Thread {
 	private boolean isNotify = false;
 	private Looper threadLooper;
 	private Handler mhandler;
-	
+
 	public UniversalServiceListener()
 	{
 		mlistener = null;
 		callingPid = -1;
 	}
-	
+
 	public UniversalServiceListener(IUniversalSensorManager listener, int callingPid)
 	{
 		this.mlistener = listener;
@@ -41,18 +41,18 @@ public class UniversalServiceListener extends Thread {
 	{
 		return mhandler;
 	}
-	
+
 	public boolean setNotify()
 	{
 		isNotify = true;
 		return true;
 	}
-	
+
 	public boolean isNotifySet()
 	{
 		return isNotify;
 	}
-	
+
 	private void linkSensor(HashMap<String, Object> mMap)
 	{
 		int						rate 	 	= -1;
@@ -60,7 +60,7 @@ public class UniversalServiceListener extends Thread {
 		String 					sensorID 	= null;
 		UniversalServiceSensor 	universalSensor = null; 
 		_Sensor 				mSensor		= null;
-		
+
 		sensorID 		= (String) mMap.get("key");
 		universalSensor = (UniversalServiceSensor) mMap.get("value");
 		rate	 		= (Integer) mMap.get("rate");
@@ -76,7 +76,7 @@ public class UniversalServiceListener extends Thread {
 			}
 		}
 
-//		universalSensor.linkListener(""+callingPid, this, rate, bundleSize);
+		//		universalSensor.linkListener(""+callingPid, this, rate, bundleSize);
 		mSensor.linkListener();
 	}
 
@@ -98,7 +98,7 @@ public class UniversalServiceListener extends Thread {
 		mUniversalServiceSensor = mSensor.getRegisteredSensor();
 		try {
 			mlistener.notifySensorChanged(mUniversalServiceSensor.getDevID(),
-			mUniversalServiceSensor.sType, UniversalConstants.ACTION_UNREGISTER);
+					mUniversalServiceSensor.sType, UniversalConstants.ACTION_UNREGISTER);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -120,11 +120,11 @@ public class UniversalServiceListener extends Thread {
 			mSensor.getRegisteredSensor().unlinkListner("" + callingPid);
 	}
 
-//	public IUniversalSensorManager getListener()
-//	{
-//		return mlistener;
-//	}
-//	
+	//	public IUniversalSensorManager getListener()
+	//	{
+	//		return mlistener;
+	//	}
+	//	
 	public boolean isEmpty()
 	{
 		synchronized (sensorMap) {
@@ -141,19 +141,19 @@ public class UniversalServiceListener extends Thread {
 				mSensor.onSensorChaged(event, length);
 			}
 		}
-//		try {
-//			mlistener.onSensorChanged(event);
-//		} catch (RemoteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		//		try {
+		//			mlistener.onSensorChanged(event);
+		//		} catch (RemoteException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 	}
-	
+
 	private void quit()
 	{
 		threadLooper.quit();
 	}
-	
+
 	private void notifyDeviceChange(Device mdevice)
 	{
 		try {
@@ -165,14 +165,14 @@ public class UniversalServiceListener extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void updateSamplingParam(Bundle bundle)
 	{
 		_Sensor mSensor = null;
 		String mSensorKey = bundle.getString(UniversalConstants.sType);
 		int    sRate = bundle.getInt(UniversalConstants.rate);
 		int    sBundleSize = bundle.getInt(UniversalConstants.bundleSize);
-		
+
 		synchronized (sensorMap) {
 			if (sensorMap.containsKey(mSensorKey)) {
 				mSensor = sensorMap.get(mSensorKey);
@@ -219,7 +219,7 @@ public class UniversalServiceListener extends Thread {
 		};
 		Looper.loop();
 	}
-	
+
 	private class _Sensor
 	{
 		int 					counter     = 0;
@@ -244,40 +244,40 @@ public class UniversalServiceListener extends Thread {
 			this.lbundleSize = bundleSize;
 			eventQueue 		= new ArrayList<SensorParcel>();
 		}
-		
+
 		private void updatecounter()
 		{
 			counter = (int) Math.ceil(1.0*sRate/lRate);
 		}
-		
+
 		public void updateListenerParam(int lRate, int lBundleSize)
 		{
 			this.lRate     = lRate;
 			this.lbundleSize = lBundleSize;
 			updatecounter();
 		}
-		
+
 		public void updateSamplingParam(int sRate, int sBundleSize)
 		{
 			this.sRate    = sRate;
 			this.sbundleSize = sBundleSize;
 			updatecounter();
 		}
-		
+
 		public UniversalServiceSensor getRegisteredSensor()
 		{
 			return mSensor;
 		}
-		
+
 		public boolean linkListener()
 		{
 			return mSensor.linkListener(""+parent.callingPid, parent, lRate, lbundleSize);
 		}
-		
+
 		private void sendData()
 		{
 			SensorParcel[] eventBundle = null;
-			
+
 			while (eventQueue.size() >= lbundleSize) {
 				eventBundle = new SensorParcel[lbundleSize];
 				for (int i = 0; i < lbundleSize; i++) {

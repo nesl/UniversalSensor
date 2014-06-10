@@ -21,7 +21,7 @@ public class UniversalSensorManager {
 	private UniversalManagerRemoteConnection remoteConnection;
 	private Context context;
 	private static String tag = UniversalSensorManager.class.getCanonicalName();
-//	private ConnectionCallback cb = new ConnectionCallback();
+	//	private ConnectionCallback cb = new ConnectionCallback();
 
 	public static UniversalSensorManager create(Context context) {
 		if (mManager != null) {
@@ -32,14 +32,14 @@ public class UniversalSensorManager {
 		mManager = new UniversalSensorManager(context);
 		return mManager;
 	}
-	
+
 	private UniversalSensorManager(Context context) {
 		this.context = context;
 		remoteConnection = new UniversalManagerRemoteConnection(this);
 		mstub = new UniversalSensorManagerStub(this);
 		connectRemote();
 	}
-	
+
 	public ArrayList<Device> listDevices()
 	{
 		try {
@@ -48,7 +48,7 @@ public class UniversalSensorManager {
 			return null;
 		}
 	}
-	
+
 	public boolean registerListener(UniversalEventListener mlistener, //UniversalSensor sensor, 
 			String devID, int sType, int rateUs, int bundleSize) {
 		if (mstub == null) {
@@ -59,25 +59,25 @@ public class UniversalSensorManager {
 		remoteConnection.registerListener(mstub, devID, sType, rateUs, bundleSize);
 		return true;
 	}
-	
+
 	public boolean unregisterListener(UniversalEventListener mlistener, String devID, int sType)
 	{
 		remoteConnection.unregisterListener(devID, sType);
 		return true;
 	}
-	
+
 	void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");
 		intent.setClassName(UNIVERSALServicePackage, UNIVERSALServiceClass);
 		context.bindService(intent, remoteConnection, Context.BIND_AUTO_CREATE);
 	}
-	
+
 	public void registerNotification(UniversalEventListener mlistener)
 	{
 		remoteConnection.registerNotification(mstub);
 	}
-	
+
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
 		UniversalSensorManager mManager = null;

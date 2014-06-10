@@ -15,7 +15,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 
 	private UniversalSensorManager mManager = null;
 	private IUniversalManagerService service = null;
-	
+
 	public UniversalManagerRemoteConnection(UniversalSensorManager mManager)
 	{
 		this.mManager = mManager;
@@ -29,7 +29,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
 	}
-	
+
 	public ArrayList<Device> listDevices() throws RemoteException
 	{
 		if (service == null) {
@@ -38,7 +38,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		}
 		return (ArrayList<Device>)service.listDevices();
 	}
-	
+
 	public void registerListener(UniversalSensorManagerStub cb,
 			String devID, int sType, int rateUs, int bundleSize)
 	{
@@ -46,14 +46,14 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			service.registerListener(cb, devID, sType, rateUs, bundleSize);
 		}catch(RemoteException e) {}
 	}
-	
+
 	public void unregisterListener(String devID, int sType)
 	{
 		try {
 			service.unregisterListener(devID, sType);
 		}catch(RemoteException e){}
 	}
-	
+
 	public void registerNotification(UniversalSensorManagerStub cb)
 	{
 		try {

@@ -14,11 +14,11 @@ import com.ucla.nesl.universaldrivermanager.UniversalDriverManager.UniversalDriv
 public class UniversalDriverRemoteConnection implements ServiceConnection {
 	private IUniversalManagerService service;
 	private UniversalDriverManager parent;
-	
+
 	UniversalDriverRemoteConnection(UniversalDriverManager parent) {
 		this.parent = parent;
 	}
-	
+
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		this.service = IUniversalManagerService.Stub.asInterface(service);
@@ -30,7 +30,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
 	}		
-	
+
 	public void push(SensorParcel[] sp)
 	{
 		try {
@@ -40,23 +40,23 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 
 	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub,
 			int sType, int rate[], int bundleSize[]) throws RemoteException
-	{
+			{
 		return service.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
-	}
+			}
 
 	public boolean unregisterDriver(String devID, int sType) throws RemoteException
 	{
 		return service.unregisterDriver(devID, sType);
 	}
-	
-//	public void pushArray(SensorParcel[] sp)
-//	{
-//		try {
-//			service.onSensorChangedArray(sp, sp.length);
-//		} catch (RemoteException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
+
+	//	public void pushArray(SensorParcel[] sp)
+	//	{
+	//		try {
+	//			service.onSensorChangedArray(sp, sp.length);
+	//		} catch (RemoteException e) {
+	//			// TODO Auto-generated catch block
+	//			e.printStackTrace();
+	//		}
+	//	}
 }
 

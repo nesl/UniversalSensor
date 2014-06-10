@@ -55,27 +55,27 @@ public class Device implements Parcelable{
 	{
 		return devID;
 	}
-	
+
 	public void setDevID(String devID)
 	{
 		this.devID = new String(devID);
 	}
-	
+
 	public String getVendorID()
 	{
 		return vendorID;
 	}
-	
+
 	public void setVendorID(String vendorID)
 	{
 		this.vendorID = vendorID;
 	}
-	
+
 	synchronized public boolean addSensor(int sType, int rate[], int bundleSize[])
 	{
 		boolean flag = false;
 		ArrayList<Integer> val = null;
-		
+
 		if (!mSensor.containsKey(sType)) {
 			mSensor.put(sType, new ArrayList<Integer>());
 			mSensor.get(sType).add(Integer.valueOf(1));
@@ -86,17 +86,17 @@ public class Device implements Parcelable{
 				mSensor.get(sType).add(Integer.valueOf(bundleSize[i]));
 			flag = true;
 		}
-//		else {
-//			val = mSensor.get(sType);
-//			if (val.get(1) != rate) {
-//				val.set(1, Integer.valueOf(rate));
-//				flag = true;
-//			}
-//			if (val.get(2) != bundleSize) {
-//				val.set(2, Integer.valueOf(bundleSize));
-//				flag = true;
-//			}
-//		}
+		//		else {
+		//			val = mSensor.get(sType);
+		//			if (val.get(1) != rate) {
+		//				val.set(1, Integer.valueOf(rate));
+		//				flag = true;
+		//			}
+		//			if (val.get(2) != bundleSize) {
+		//				val.set(2, Integer.valueOf(bundleSize));
+		//				flag = true;
+		//			}
+		//		}
 		return flag;
 	}
 
@@ -116,39 +116,39 @@ public class Device implements Parcelable{
 	{
 		return stream.indexOf(Integer.valueOf(0xcc));
 	}
-	
+
 	private int bundleSizeEndIndex(ArrayList<Integer> stream)
 	{
 		return stream.size();
 	}
-	
+
 	synchronized public List<Integer> getRateList(int sType)
 	{
 		ArrayList<Integer> pk = null;
-		
+
 		if (mSensor.containsKey(sType)) {
 			pk = mSensor.get(sType);
 			return pk.subList(1, rateEndIndex(pk));
 		}
 		return null;
 	}
-	
+
 	synchronized public List<Integer> getBundleSizeList(int sType)
 	{
 		ArrayList<Integer> pk = null;
-		
+
 		if (mSensor.containsKey(sType)) {
 			pk = mSensor.get(sType);
 			return pk.subList(rateEndIndex(pk) + 1, bundleSizeEndIndex(pk));
 		}
 		return null;
 	}
-	
+
 	private void _removeSensor(HashMap<String, Object> map)
 	{
 		return;
 	}
-	
+
 	synchronized public boolean removeSensor(int sType)
 	{
 		if (sType == Sensor.TYPE_ALL) {
@@ -167,7 +167,7 @@ public class Device implements Parcelable{
 	synchronized public ArrayList<Integer> getSensorList()
 	{
 		ArrayList<Integer> sList = new ArrayList<Integer>();
-		
+
 		for (Map.Entry<Integer, ArrayList<Integer>> entry: mSensor.entrySet())
 		{
 			sList.add(entry.getKey());
@@ -198,7 +198,7 @@ public class Device implements Parcelable{
 	public ArrayList<Integer> getArrayList(int[] sensors)
 	{
 		ArrayList<Integer> alist = new ArrayList<Integer>();
-		
+
 		for(int i = 0; i < sensors.length; i++)
 		{
 			alist.add(new Integer(sensors[i]));

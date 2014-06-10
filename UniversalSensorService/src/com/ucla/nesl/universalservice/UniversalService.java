@@ -66,16 +66,16 @@ public class UniversalService extends Service {
 					Log.d(tag, "sending notification to " + entry.getKey());
 					Log.d(tag, "sending notification to " + entry.getValue());
 					mlistener = entry.getValue();
+
 					if (mlistener.isNotifySet() == false)
 						continue;
+
 					mhandler = mlistener.getHandler();
-//					Log.i(tag, "Sending message to handler");
 					if (mhandler == null) {
 						Log.e(tag, "mhandler of " + mlistener.callingPid + " is null");
 						continue;
 					}
 					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_NotifyDeviceChanged, mdevice));
-//					Log.i(tag, "message sent to handler");
 				}
 			}
 			return true;
@@ -123,7 +123,7 @@ public class UniversalService extends Service {
 			}
 			return mlistener;
 		}
-		
+
 		public boolean hasRegisteredListener(String listnerKey)
 		{
 			synchronized (registeredListeners) {
@@ -139,14 +139,6 @@ public class UniversalService extends Service {
 			}
 			return mlistener;
 		}
-
-//		public boolean setDriverSensorRate(String devID, int sType, int rate)  throws RemoteException
-//		{
-//			UniversalServiceDevice mdevice;
-//			mdevice = getRegisteredDevice(devID);
-//			mdevice.mDriverStub.setRate(sType, rate);
-//			return true;
-//		}
 
 		@Override
 		public ArrayList<Device> listDevices() throws RemoteException {
@@ -180,55 +172,55 @@ public class UniversalService extends Service {
 
 			mSensorKey = generateSensorKey(mdevice.getDevID(), sType);
 			mUniversalDevice.registerSensor(mSensorKey, sType, maxRate, bundleSize);
-//			if (addDriverSensor(mUniversalDevice.getDevID(), sType, maxRate) == false) {
-//				return false;
-//			}
-//
-//			Log.i(tag, "list of registered sensors");
-//
-//			for(Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet())
-//				Log.i("tag", "as " + entry.getKey());
+			//			if (addDriverSensor(mUniversalDevice.getDevID(), sType, maxRate) == false) {
+			//				return false;
+			//			}
+			//
+			//			Log.i(tag, "list of registered sensors");
+			//
+			//			for(Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet())
+			//				Log.i("tag", "as " + entry.getKey());
 
 			notifyListeners(mdevice);
 
 			return true;
 		}
 
-//		public boolean addDriverSensor(String devID, int sType, int maxRate)
-//				throws RemoteException {
-//			UniversalServiceSensor mSensor = null;
-//			UniversalServiceDevice mdevice = null;
-//
-//			mdevice = getRegisteredDevice(devID);
-//			if (mdevice == null)
-//				return false;
-//			
-//			mSensor = new UniversalServiceSensor(devID, generateSensorKey(devID, sType), mdevice, sType, maxRate);
-//			mdevice.addSensor(mSensor, maxRate);
-//
-//			// add the sensor the universal list of sensors
-//			addRegisteredSensor(generateSensorKey(devID, sType), mSensor);
-//			return true;
-//		}
-//
-//		public boolean removeDriverSensor(UniversalServiceDevice mdevice, String devID, int sType)
-//				throws RemoteException {
-//			String 				   mSensorKey = null;
-//			UniversalServiceSensor mSensor 	  = null;
-//			
-//			mSensorKey = generateSensorKey(devID, sType);
-//			mSensor = removeRegisteredSensor(mSensorKey);
-//			if (mSensor == null) 
-//				return false;
-//
-//			// Notify all the listeners
-//			mSensor.unregister();
-//
-//			// Unregister the sensor from its device
-//			mdevice.removeSensor(mSensor);
-//
-//			return true;
-//		}
+		//		public boolean addDriverSensor(String devID, int sType, int maxRate)
+		//				throws RemoteException {
+		//			UniversalServiceSensor mSensor = null;
+		//			UniversalServiceDevice mdevice = null;
+		//
+		//			mdevice = getRegisteredDevice(devID);
+		//			if (mdevice == null)
+		//				return false;
+		//			
+		//			mSensor = new UniversalServiceSensor(devID, generateSensorKey(devID, sType), mdevice, sType, maxRate);
+		//			mdevice.addSensor(mSensor, maxRate);
+		//
+		//			// add the sensor the universal list of sensors
+		//			addRegisteredSensor(generateSensorKey(devID, sType), mSensor);
+		//			return true;
+		//		}
+		//
+		//		public boolean removeDriverSensor(UniversalServiceDevice mdevice, String devID, int sType)
+		//				throws RemoteException {
+		//			String 				   mSensorKey = null;
+		//			UniversalServiceSensor mSensor 	  = null;
+		//			
+		//			mSensorKey = generateSensorKey(devID, sType);
+		//			mSensor = removeRegisteredSensor(mSensorKey);
+		//			if (mSensor == null) 
+		//				return false;
+		//
+		//			// Notify all the listeners
+		//			mSensor.unregister();
+		//
+		//			// Unregister the sensor from its device
+		//			mdevice.removeSensor(mSensor);
+		//
+		//			return true;
+		//		}
 
 		@SuppressWarnings("unchecked")
 		@Override
@@ -236,9 +228,9 @@ public class UniversalService extends Service {
 			// remove the entry from the registeredDevices,
 			// we should send notifications to all the applications that have asked for the notification
 			// also free all the sensor objects
-			
+
 			String mSensorKey = null;
-			
+
 			Log.i(tag, "unregisterDriver: " + devID + ", sensorType " + sType);
 
 			UniversalServiceDevice mdevice = getRegisteredDevice(devID);
@@ -290,7 +282,7 @@ public class UniversalService extends Service {
 				Log.e(tag, "Invalid device mentioned, registeration failed");
 				return false;
 			}
-	
+
 			mSensor = mDevice.getSensor(mSensorKey);
 			if (mSensor == null) {
 				// a null here means that the app wants to register to a sensor that
@@ -304,7 +296,7 @@ public class UniversalService extends Service {
 				Log.e(tag, "Incorrect rate or bundleSize, registerListener failed");
 				return false;
 			}
-			
+
 			// Add the listener to the map if it already doesn't exists
 			if (!hasRegisteredListener(mListenerKey)) {
 				_registerListener(listenerPid, mListenerKey, mManager);
@@ -337,7 +329,7 @@ public class UniversalService extends Service {
 			String mListenerKey = generateListenerKey(Binder.getCallingPid());
 			String mSensorKey = generateSensorKey(devID, sType);
 			UniversalServiceListener mlistener;
-//			Handler mHandler;
+			//			Handler mHandler;
 
 			Log.d(tag, "unregisterListener on " + devID + ":" + sType);
 			// remove the entry from registeredListener
@@ -352,7 +344,7 @@ public class UniversalService extends Service {
 			// we send a message via handler. One fix is we can
 			// sleep for a while or make mlistener class trigger
 			// cleanup when it is no more registered with a sensor.
-//			mlistener.getHandler()unregister(mSensorKey);
+			//			mlistener.getHandler()unregister(mSensorKey);
 			mlistener.unregister(mSensorKey);
 
 			// remove the entry only when this is the last sensor
@@ -365,23 +357,23 @@ public class UniversalService extends Service {
 
 			// We should disable the sensor if removal of the
 			// listener has made its listener list empty
-//				setDriverSensorRate(devID, sType, msensor.isEmpty()? 0 : msensor.getNextRate());
+			//				setDriverSensorRate(devID, sType, msensor.isEmpty()? 0 : msensor.getNextRate());
 			return true;
 		}
 
-//		@Override
-//		public void onSensorChanged(SensorParcel event) throws RemoteException {
-//			String key = generateSensorKey(event.devID, event.sType);
-//
-//			UniversalServiceSensor msensor = getRegisteredDevice(event.devID).getRegisteredSensor(key);
-//			if(msensor == null) {
-//				Log.i(tag, "msensor is null " + key);
-//				return;
-//			}
-//
-//			msensor.onSensorChanged(event);
-//			return;
-//		}
+		//		@Override
+		//		public void onSensorChanged(SensorParcel event) throws RemoteException {
+		//			String key = generateSensorKey(event.devID, event.sType);
+		//
+		//			UniversalServiceSensor msensor = getRegisteredDevice(event.devID).getRegisteredSensor(key);
+		//			if(msensor == null) {
+		//				Log.i(tag, "msensor is null " + key);
+		//				return;
+		//			}
+		//
+		//			msensor.onSensorChanged(event);
+		//			return;
+		//		}
 
 		@Override
 		public String getDevID() throws RemoteException {
@@ -409,7 +401,7 @@ public class UniversalService extends Service {
 				throws RemoteException {
 			String key = generateSensorKey(event[0].devID, event[0].sType);
 			event[0].mSensorKey = key;
-			
+
 			UniversalServiceSensor msensor = getRegisteredDevice(event[0].devID).getRegisteredSensor(key);
 			if(msensor == null) {
 				Log.i(tag, "msensor is null " + key);

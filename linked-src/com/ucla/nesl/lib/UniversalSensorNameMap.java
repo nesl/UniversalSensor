@@ -11,7 +11,7 @@ import android.R.integer;
 	public static final String SKIN_TEMPERATURE_NAME = "SkinTemperature";
 	public static final String ZEPHYR_BATTERY_NAME = "ZephyrBattery";
 	public static final String ZEPHYR_BUTTON_WORN_NAME = "ZephyrButtonWorn";
-*/
+ */
 
 public class UniversalSensorNameMap {
 	private static HashMap<Integer, String> nameMap = new HashMap<Integer, String>(){
@@ -28,7 +28,7 @@ public class UniversalSensorNameMap {
 			put(new Integer(UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN), "ZephyrButtonWorn");
 		}
 	};
-	
+
 	public static String getName(int sType){
 		return nameMap.get(sType);
 	}

@@ -37,17 +37,17 @@ public class UniversalServiceSensor {
 		Log.d(tag, "rateList: " + Arrays.toString(rateList) + ", bundleSize: " + Arrays.toString(bundleSizeList));
 		this.sRate  = this.rateList[0];
 		this.sBundleSize = this.bundleSizeList[0];
-//		listenersList = new ArrayList<UniversalServiceListener>();
+		//		listenersList = new ArrayList<UniversalServiceListener>();
 	}
 
-//	public boolean update(int rateRange, int bundleSize)
-//	{
-//		this.rateRange = rateRange;
-//		this.bundleSize = bundleSize;
-//		return true;
-//	}
+	//	public boolean update(int rateRange, int bundleSize)
+	//	{
+	//		this.rateRange = rateRange;
+	//		this.bundleSize = bundleSize;
+	//		return true;
+	//	}
 
-/*
+	/*
 	@SuppressWarnings("unchecked")
 	private ArrayList<UniversalServiceListener> getSensorList()
 	{
@@ -55,8 +55,8 @@ public class UniversalServiceSensor {
 //			return (ArrayList<UniversalServiceListener>)listenersList.clone();
 		}
 	}
-*/
-	
+	 */
+
 	private void updateDriverRate()
 	{
 		try {
@@ -98,20 +98,20 @@ public class UniversalServiceSensor {
 						break;
 					}
 				}
-				
+
 				for (int i = 0; i < bundleSizeList.length; i++) {
 					if (tBundleSize <= bundleSizeList[i]) {
 						sBundleSize = bundleSizeList[i];
 						break;
 					}
 				}
-				
+
 				for (Map.Entry<String, _Listener> entry : listenersList.entrySet()) {
 					Bundle bundle = new Bundle();
 					bundle.putString(UniversalConstants.sType, mSensorKey);
 					bundle.putInt(UniversalConstants.rate, sRate);
 					bundle.putInt(UniversalConstants.bundleSize, sBundleSize);
-					
+
 					mhandler = entry.getValue().getHandler();
 					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_UpdateSamplingParam, bundle));
 				}
@@ -152,7 +152,7 @@ public class UniversalServiceSensor {
 		// Nothing to do here
 		updateSamplingParams();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public void onSensorChanged(SensorParcel[] event, int length)
 	{
@@ -165,14 +165,14 @@ public class UniversalServiceSensor {
 			}
 		}
 	}
-	
+
 	public boolean isEmpty()
 	{
 		synchronized (listenersList) {
 			return listenersList.isEmpty();
 		}
 	}
-	
+
 	public String getDevID()
 	{
 		return mdevice.getDevID();
@@ -200,7 +200,7 @@ public class UniversalServiceSensor {
 		}
 		return true;
 	}
-	
+
 	/** 
 	 * Check if the rate and bundlesize requested by the listener are valid
 	 * @param mRate
@@ -210,7 +210,7 @@ public class UniversalServiceSensor {
 	synchronized public boolean checkParams(int mRate, int mBundleSize)
 	{
 		boolean rflag = false, bflag = false;
-		
+
 		for (int i : rateList)
 		{
 			if (i % mRate == 0) {
@@ -218,7 +218,7 @@ public class UniversalServiceSensor {
 				break;
 			}
 		}
-		
+
 		for (int i : bundleSizeList) {
 			if (i % mBundleSize == 0) {
 				bflag = true;
@@ -234,7 +234,7 @@ public class UniversalServiceSensor {
 		int 					 lRate	   = 0;
 		int				         lbundleSize = 0;
 		UniversalServiceListener mListener = null;
-		
+
 		public _Listener(String listenerID, UniversalServiceListener mListener, int lRate, int lbundleSize)
 		{
 			this.listenerID = new String(listenerID);
@@ -242,23 +242,23 @@ public class UniversalServiceSensor {
 			this.lRate      = lRate;
 			this.lbundleSize = lbundleSize;
 		}
-		
+
 		public void update(int lRate, int lbundleSize)
 		{
 			this.lRate = lRate;
 			this.lbundleSize = lbundleSize;
 		}
-		
+
 		public int getRate()
 		{
 			return lRate;
 		}
-		
+
 		public int getBundleSize()
 		{
 			return lbundleSize;
 		}
-		
+
 		public Handler getHandler()
 		{
 			return mListener.getHandler();
