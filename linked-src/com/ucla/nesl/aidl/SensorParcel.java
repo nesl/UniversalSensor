@@ -1,5 +1,7 @@
 package com.ucla.nesl.aidl;
 
+import com.ucla.nesl.lib.UniversalConstants;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -16,6 +18,28 @@ public class SensorParcel implements Parcelable {
 	{
 	}
 
+	public SensorParcel(int sType)
+	{
+		this.sType = sType;
+		valueSize  = UniversalConstants.getValuesLength(sType);
+		values     = new float[valueSize];
+	}
+
+	public SensorParcel(String devID, int sType)
+	{
+		this.devID = devID;
+		this.sType = sType;
+		valueSize  = UniversalConstants.getValuesLength(sType);
+		values     = new float[valueSize];
+	}
+	
+	public void setDataValues(float[] values, float timestamp)
+	{
+		this.timestamp = timestamp;
+		for (int i = 0; i < valueSize; i++)
+			this.values[i] = values[i];
+	}
+	
 	public SensorParcel(SensorParcel sp)
 	{
 		this.devID = new String(sp.devID);

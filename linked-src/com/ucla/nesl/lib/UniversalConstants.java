@@ -15,4 +15,17 @@ public class UniversalConstants {
 	public static final String rate = "rate";
 	public static final String bundleSize = "bundleSize";
 	public static final String sType = "sType";
+	
+	public static int getValuesLength(int sType)
+	{
+		switch(sType) {
+		case UniversalSensor.TYPE_ACCELEROMETER:
+		case UniversalSensor.TYPE_CHEST_ACCELEROMETER:
+			return 3;
+		case UniversalSensor.TYPE_LIGHT:
+			return 1;
+		default:
+			return 1;
+		}
+	}
 }

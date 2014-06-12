@@ -2,8 +2,10 @@ package com.ucla.nesl.app;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
+import android.R.integer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,6 +30,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     private Button registerDriver;
     private Button unregisterDriver;
     private Button startZephyr;
+    private Button startTestDriver;
     private EditText edittext;
     private String tag = UniversalSensorApp.class.getCanonicalName();
     private UniversalSensorManager mManager;    
@@ -47,6 +50,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         unregisterDriver = (Button)findViewById(R.id.unregisterDriver);
         edittext = (EditText)findViewById(R.id.edittext);
         startZephyr = (Button)findViewById(R.id.startZephyr);
+        startTestDriver = (Button)findViewById(R.id.startTestDriver);
         mManager = UniversalSensorManager.create(getApplicationContext());
         
         register.setOnClickListener(new OnClickListener() {
@@ -142,6 +146,30 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 				startService(intent);
 			}
 		});
+	    startTestDriver.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View arg0) {
+				String value = edittext.getText().toString();
+				Log.i(tag, "calling broadcast " + edittext.getText());
+				if (value.isEmpty()) {
+					Log.i(tag, "bluetoothAddr is empty");
+					return;
+				}
+				int cmd = Integer.valueOf(value.split(":")[0]);
+            	int name = Integer.valueOf(value.split(":")[1]);
+            	int rate = Integer.valueOf(value.split(":")[2]);
+            	int bundleSize = Integer.valueOf(value.split(":")[3]);
+				Intent intent = new Intent("TestDriverBroadcastReceiver");
+				intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+				intent.putExtra("cmd", cmd);
+				intent.putExtra("name", name);
+				intent.putExtra("rate", rate);
+				intent.putExtra("bundleSize", bundleSize);
+//				intent.setAction("ZephyrDriverBroadcastReceiver");
+				startService(intent);
+			}
+		});
 	}
 
     void registerNotification()
@@ -151,6 +179,9 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     
     private void registerListener(String devID, int sType, int rate, int bundleSize)
     {
+    	currentTime = System.currentTimeMillis();
+    	oldTime  = 0;
+    	val = 0;
     	mManager.registerListener(this, devID, sType, rate, bundleSize);
     }
     
@@ -169,10 +200,21 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	protected void onResume() {
 	    super.onResume();
 	}
+
+	int val;
+	long currentTime;
+	long oldTime;
 	
 	@Override
 	public void onSensorChanged(UniversalSensorEvent[] event) {
-		Log.i(tag, "Event received: lenght: " + event.length + ", "+ event[0].devID + "SensorType:" + UniversalSensorNameMap.getName(event[0].sType) + ", " + event[0].values[0] + ", " + event[0].timestamp);
+		val ++;
+		if (val == 1000) {
+			val = 0;
+			oldTime = currentTime;
+			currentTime = System.currentTimeMillis();
+			Long timeSpent = (currentTime - oldTime);// / 1000.0;
+			Log.i(tag, "time: " + timeSpent + ", lenght: " + event.length + ", "+ event[0].devID + "SensorType:" + UniversalSensorNameMap.getName(event[0].sType));
+		}
 	}
 
 	@Override

@@ -46,6 +46,11 @@
 	            android:text="startZephyr"
 	            android:layout_height="wrap_content"
 	            android:layout_width="wrap_content" />
+	       <Button
+	            android:id="@+id/startTestDriver"
+	            android:text="startTestDriver"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />
         </TableRow>
         <TableRow
          	android:gravity="center" 

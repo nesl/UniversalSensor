@@ -1,5 +1,8 @@
 package com.ucla.nesl.universaldrivermanager;
 
+import java.util.HashMap;
+
+import android.R.string;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
@@ -7,6 +10,7 @@ import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
+import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensorEvent;
 
@@ -16,13 +20,12 @@ public class UniversalDriverManager {
 	private String UNIVERSALServiceClass = "com.ucla.nesl.universalservice.UniversalService";
 	private Context context;
 	private UniversalDriverRemoteConnection remoteConnection;
-	//	private UniversalDriverManager mManager = null;
 	private Device device = null;
 	private String devID  = null;
 	private String vendorID = null;
 	UniversalDriverManagerStub mDriverManagerStub;
 	boolean once = true;
-
+	
 	public static UniversalDriverManager create(Context context, String vendorID)
 	{
 		//		if (mManager != null)
@@ -59,12 +62,15 @@ public class UniversalDriverManager {
 		device.setDevID(devID);
 	}
 
-	public Boolean push(UniversalSensorEvent[] mSensor)
+	public Boolean push(UniversalSensorEvent[] event, int length)
 	{
-		for (int i = 0; i < mSensor.length; i++)
-			mSensor[i].setDevID(devID);
-		remoteConnection.push(mSensor);
+		remoteConnection.push(event, length);
 		return true;
+	}
+
+	public String getDevID()
+	{
+		return devID;
 	}
 
 	/**

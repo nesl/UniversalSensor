@@ -1,6 +1,6 @@
 package com.ucla.nesl.universaldriverservice;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.app.Service;
 import android.content.Intent;
@@ -24,19 +24,24 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	SensorManager mSensorManager;
 	Sensor mSensor;
 	UniversalDriverManager mdriverManager1 = null, mdriverManager2 = null;
-	int accRate[], lightRate[];
+	HashMap<Integer, int[]> sensorRate = new HashMap<Integer, int[]>();
+	int[] delayType = new int[] {SensorManager.SENSOR_DELAY_FASTEST, SensorManager.SENSOR_DELAY_GAME, 
+			SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI
+	};
 	boolean registered = false;
 	int rate = 0;
 	int bundleSize[];
-	
+	int count = 0;
+
 	@Override
     public void onCreate() {
         super.onCreate();
         Log.i(tag, "onCreate called driver");
         
-        accRate = new int[]{200, 100, 50, 25};
-        lightRate = new int[]{200, 100, 50, 25};
-        bundleSize = new int[]{20};
+        sensorRate.put(UniversalSensor.TYPE_ACCELEROMETER, new int[]{200, 50,15, 50});
+        sensorRate.put(UniversalSensor.TYPE_GYROSCOPE, new int[]{50, 5, 5, 15});
+        sensorRate.put(UniversalSensor.TYPE_MAGNETIC_FIELD, new int[]{200, 50, 5, 15});
+        bundleSize = new int[]{1};
         
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
@@ -50,8 +55,6 @@ public class UniversalDriverService extends Service implements SensorEventListen
 
         handler = new Handler();
         handler.postDelayed(r, 1000);
-        
-        h2 = new Handler();
     }
 
 	void register()
@@ -59,11 +62,9 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		// Exposing accelerometer for now. You can expose all the sensors.
 		// Only the exposed sensors will be visible to the applications
 
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, accRate, bundleSize);
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_LIGHT, lightRate, bundleSize);
-        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-//        h2.postDelayed(r1, 20000);
-        registered = true;
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, sensorRate.get(UniversalSensor.TYPE_ACCELEROMETER), bundleSize);
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_GYROSCOPE, sensorRate.get(UniversalSensor.TYPE_GYROSCOPE), bundleSize);
+        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_MAGNETIC_FIELD, sensorRate.get(UniversalSensor.TYPE_MAGNETIC_FIELD), bundleSize);
 	}
 
 	void unregister()
@@ -110,18 +111,31 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	public void onSensorChanged(SensorEvent event) {
 		UniversalSensorEvent[] mUniversalSensorEvent = new UniversalSensorEvent[1];
 		mUniversalSensorEvent[0] = new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp);
-		if (rate > 0 && registered)
-			mdriverManager1.push(mUniversalSensorEvent);
+		mUniversalSensorEvent[0].devID = mdriverManager1.getDevID();
+		mdriverManager1.push(mUniversalSensorEvent, 1);
 	}
 
+	int getDelayType(int sType, int rate)
+	{
+		int[] rates = sensorRate.get(sType);
+		for (int i = 0; i < rates.length; i++) {
+			if (rate == rates[i])
+				return delayType[i];
+		}
+		return -1;
+	}
 	@Override
 	public void setRate(int sType, int rate, int bundleSize) {
 		Log.i(tag, "setRate:: sType: " + sType + ", rate: " + rate + ", bundleSize: " + bundleSize);
-		if (rate == 0)
+		if (rate == 0) {
 			this.rate = 0;
-		else
-			this.rate = 1000/rate;
+	        mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sType));
+	        Log.i(tag, "setRate unregister  " + sType + " rate " + rate);
+		} else {
+			int delay_type = getDelayType(sType, rate);
+			mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sType));
+	        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(sType), delay_type);
+	        Log.i(tag, "setRate " + sType + " rate " + rate + " delaytype " + delay_type);
+		}
 	}
-
-
 }

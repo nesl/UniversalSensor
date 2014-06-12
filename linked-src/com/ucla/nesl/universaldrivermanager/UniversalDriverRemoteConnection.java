@@ -31,10 +31,10 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 	public void onServiceDisconnected(ComponentName name) {
 	}		
 
-	public void push(SensorParcel[] sp)
+	public void push(SensorParcel[] sp, int length)
 	{
 		try {
-			service.onSensorChanged(sp, sp.length);
+			service.onSensorChanged(sp, length);
 		} catch(RemoteException e) {}
 	}
 

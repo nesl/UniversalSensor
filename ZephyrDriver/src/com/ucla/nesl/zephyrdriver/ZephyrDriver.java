@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ import android.content.res.Resources.Theme;
 import android.os.PowerManager;
 import android.util.Log;
 
+import com.ucla.nesl.lib.DriverSensorData;
+import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorEvent;
@@ -28,28 +31,14 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	private PowerManager.WakeLock mWakeLock;
 	private UniversalDriverManager mDriverManager;
 	private Context context;
+	
+	private int[] rate = {100};
+	private int[] bundleSize = {20};
 
 	private static final int RETRY_INTERVAL = 5000; // ms
 	private static final int LIFE_SIGN_SEND_INTERVAL = 8000; //ms
-	private static final int VALID_WORN_DURATION = 3000; // ms
-	private static final int VALID_UNWORN_DURATION = 3000; // ms
-	private static final int ECG_PACKET_TIMEOUT = 500; // ms (ECG packet period = 252 ms)
-	private static final int RIP_PACKET_TIMEOUT = 1500; // ms (RIP packet period = 1.008 sec);
 
-	private static final String NOTI_TITLE = "Zephyr Device Service";
-	private static final String FLOW_ENGINE_SERVICE_NAME = "edu.ucla.nesl.flowengine.FlowEngine";
 	private static final String BLUETOOTH_SERVICE_UUID = "00001101-0000-1000-8000-00805f9b34fb";
-
-	private static final String PROPERTY_FILE_NAME = "flowengine.properties";
-	private static final String PROP_NAME_ZEPHYR_ADDR = "zephyr_bluetooth_addr";
-
-	private static final int MSG_STOP = 1;
-	private static final int MSG_START = 2;
-	private static final int MSG_KILL = 3;
-	private static final int MSG_START_SENSOR = 4;
-	private static final int MSG_STOP_SENSOR = 5;
-	private static final int MSG_READ_PROPERTY_FILE = 6;
-	private static final int MSG_TRY_BINDING_FLOWENGINE = 7;
 
 	private static final byte START_ECG_PACKET[] = { 0x02, 0x16, 0x01, 0x01, 0x5e, 0x03 };
 	private static final byte START_RIP_PACKET[] = { 0x02, 0x15, 0x01, 0x01, 0x5e, 0x03};
@@ -66,19 +55,13 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	//private byte SET_RTC_PACKET[];
 
 //	private FlowEngineAPI mAPI;
-	private int	mDeviceID;
+//	private int	mDeviceID;
 //	private ZephyrDeviceService mThisService = this;
 
 	private BluetoothSocket mSocket;
-	private Thread mReceiveThread;
 	private boolean mIsStopRequest = false;
 	private OutputStream mOutputStream;
 	private InputStream mInputStream;
-
-	private int mFakeRIPData[][] = {
-			{450, 489, 528, 566, 603, 640, 675, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 675, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 674, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 225, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {449, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 225, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 675, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {449, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 225, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 224, 259, 296, 333, 371, 410}, {449, 489, 528, 566, 603, 640, 674, 708, 739, 768, 794, 818, 839, 857, 872, 884, 893, 898}, {900, 898, 893, 884, 872, 857, 839, 818, 794, 768, 739, 708, 675, 640, 603, 566, 528, 489}, {450, 410, 371, 333, 296, 259, 225, 191, 160, 131, 105, 81, 60, 42, 27, 15, 6, 1}, {0, 1, 6, 15, 27, 42, 60, 81, 105, 131, 160, 191, 225, 259, 296, 333, 371, 410}			
-	};
-	private int mFakeRIPDataIndex = 0;
 
 	private boolean mIsSkinTemp = false;
 	private boolean mIsBattery = false;
@@ -92,6 +75,8 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	private long lastECGRecvTime = -1;
 	private long lastRIPRecvTime = -1;
 
+	private HashMap<Integer, DriverSensorData> mSensorDataMap = new HashMap<Integer, DriverSensorData>();
+	
 	int[] breathingData = new int[18];
 	int[] ecgData = new int[63];
 	int[] accData = new int[60];
@@ -103,18 +88,6 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 //		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 //		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
 //		mWakeLock.setReferenceCounted(false);
-	}
-
-	private void acquireWakeLock() {
-		if (!mWakeLock.isHeld()) {
-			mWakeLock.acquire();
-		}
-	}
-	
-	private void releaseWakeLock() {
-		if (mWakeLock.isHeld()) {
-			mWakeLock.release();
-		}
 	}
 	
 	private boolean connect(String deviceAddress) {
@@ -188,7 +161,6 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	}
 	
 	private boolean tryToConnect() {
-//		acquireWakeLock();
 
 		if (bluetoothAddr == null) {
 			Log.d(TAG, "Please setup Bluetooth Address.");
@@ -256,7 +228,7 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 
 				// TODO: add CRC check?
 				
-      //int numBytes = receivedBytes[2]+5;
+				//int numBytes = receivedBytes[2]+5;
 				//Log.d(TAG, "Received " + Integer.toString(numBytes) + " bytes: " + getHex(receivedBytes, receivedBytes[2]+5));
 
 /*				if (msgID == 0x20) {
@@ -347,9 +319,12 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 							accData[j++] = ((receivedBytes[i+3]&0xFF)>>6) | ((receivedBytes[i+4]&0xFF) << 2);
 					}
 
+					DriverSensorData mData = mSensorDataMap.get(UniversalSensor.TYPE_CHEST_ACCELEROMETER);
+					mData.initializeIndex();
 //						double[] accSample = new double[3];
 					float[] accSample = new float[3];
-					for (int i = 0, j = 0; i < accData.length; i += 3, j++) {
+					int  j = 0;
+					for (int i = 0; i < accData.length; i += 3, j++) {
 						accSample[0] = (float) convertADCtoG(accData[i]);
 						accSample[1] = (float) convertADCtoG(accData[i+1]);
 						accSample[2] = (float) convertADCtoG(accData[i+2]);
@@ -357,11 +332,11 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 
 						// sample interval: 20ms
 						if (mIsAccelerometer) {
-//							Log.i(TAG, "acc data " + accSample[0] + ", " + accSample[1] + ", " + accSample[2]);
-							//mAPI.pushDoubleArray(mDeviceID, SensorType.CHEST_ACCELEROMETER, accSample, accSample.length, timestamp + (j * 20));
-							mDriverManager.push(new UniversalSensorEvent(UniversalSensor.TYPE_CHEST_ACCELEROMETER, accSample, timestamp + (j * 20)));
+							mData.setDataValues(accSample, timestamp + (j * 20));
 						}
 					}
+					if (mIsAccelerometer)
+						mDriverManager.push(mData.getEventArray(), j);
 				} else if (msgID == 0x23 ) {
 					//Log.d(TAG, "Recevied lifesign from Zephyr.");
 				} else {
@@ -417,8 +392,21 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 		mInputStream = null;
 		mOutputStream = null;
 		mIsStopRequest = false;
-		mReceiveThread = null;
-		releaseWakeLock();
+	}
+
+	private void init(int sType, int bundleSize)
+	{
+		DriverSensorData mData = new DriverSensorData(mDriverManager.getDevID(), sType, bundleSize);
+		mSensorDataMap.put(sType, mData);
+	}
+	
+	private int max(int[] arr)
+	{
+		int maxValue = arr[0];
+		for (int i = 1; i < arr.length; i++)
+			if (maxValue < arr[i])
+				maxValue = arr[i];
+		return maxValue;
 	}
 
 	@Override
@@ -432,12 +420,13 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_CHEST_ACCELEROMETER);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ECG);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_RIP);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_SKIN_TEMPERATURE);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BATTERY);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN);
+		init(UniversalSensor.TYPE_CHEST_ACCELEROMETER, max(bundleSize));
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_CHEST_ACCELEROMETER, rate, bundleSize);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ECG, rate, bundleSize);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_RIP, rate, bundleSize);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_SKIN_TEMPERATURE, rate, bundleSize);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BATTERY, rate, bundleSize);
+		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN, rate, bundleSize);
 		attachZephyr();
 	}
 	
@@ -696,7 +685,7 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	}
 	
 	@Override
-	public void setRate(int sType, int rate) {
+	public void setRate(int sType, int rate, int bundleSize) {
 		Log.i(TAG, "setting rate " + sType + ": " + rate);
 		if (rate > 0) {
 			handleStartSensor(sType);
