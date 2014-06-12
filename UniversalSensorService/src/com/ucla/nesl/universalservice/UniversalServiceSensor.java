@@ -66,7 +66,6 @@ public class UniversalServiceSensor {
 			Handler mHandler = mdevice.getServiceHandler();
 			mHandler.sendMessage(mHandler.obtainMessage(UniversalConstants.MSG_UnregisterDriver, mdevice.getDevID()));
 		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -219,14 +218,14 @@ public class UniversalServiceSensor {
 
 		for (int i : rateList)
 		{
-			if (i % mRate == 0) {
+			if ((i % mRate == 0) || (mRate % i == 0)) {
 				rflag = true;
 				break;
 			}
 		}
 
 		for (int i : bundleSizeList) {
-			if (i % mBundleSize == 0) {
+			if ((i % mBundleSize == 0) || (mBundleSize % i == 0)) {
 				bflag = true;
 				break;
 			}

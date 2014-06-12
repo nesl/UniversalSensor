@@ -277,6 +277,7 @@ public class UniversalServiceListener extends Thread {
 			this.lRate     = lRate;
 			this.lbundleSize = lBundleSize;
 			updatecounter();
+			Log.i(tag, "updateListenerParam: rate:" + lRate + " bundleSize: " + lbundleSize + " counter: " + counter);
 		}
 
 		public void updateSamplingParam(int sRate, int sBundleSize)
@@ -284,6 +285,8 @@ public class UniversalServiceListener extends Thread {
 			this.sRate    = sRate;
 			this.sbundleSize = sBundleSize;
 			updatecounter();
+			Log.i(tag, "updateSamplingParam: rate:" + sRate + " bundleSize: " + sbundleSize + " counter: " + counter);
+
 		}
 
 		public UniversalServiceSensor getRegisteredSensor()
