@@ -88,6 +88,7 @@ public class UniversalServiceSensor {
 					if (flag) {
 						tRate = mlistener.getRate();
 						tBundleSize = mlistener.getBundleSize();
+						flag = false;
 					} else {
 						if (tRate < mlistener.getRate())
 							tRate = mlistener.getRate();
