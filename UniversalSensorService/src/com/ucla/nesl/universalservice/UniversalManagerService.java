@@ -187,7 +187,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			addRegisteredDevice(mUniversalDevice.getDevID(), mUniversalDevice);
 		}
 
-		Log.d(tag, "registering driver " + mdevice.getVendorID() + " mdevice sensorlist " + mdevice.getSensorList());
+		Log.d(tag, "registering driver " + mdevice.getDevID() + " mdevice sensorlist " + mdevice.getSensorList());
 
 		mSensorKey = generateSensorKey(mdevice.getDevID(), sType);
 		mUniversalDevice.registerSensor(mSensorKey, sType, maxRate, bundleSize);
@@ -195,10 +195,10 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		//				return false;
 		//			}
 		//
-		//			Log.i(tag, "list of registered sensors");
+		//		Log.d(tag, "list of registered sensors");
 		//
-		//			for(Map.Entry<String, UniversalServiceSensor> entry : registeredSensors.entrySet())
-		//				Log.i("tag", "as " + entry.getKey());
+		//		for(Map.Entry<String, UniversalServiceSensor> entry : mUniversalDevice.getSensorList().entrySet())
+		//			Log.d("tag", "as " + entry.getKey());
 
 		notifyListeners(mdevice);
 

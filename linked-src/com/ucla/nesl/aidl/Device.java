@@ -14,7 +14,6 @@ import android.os.Parcelable;
 public class Device implements Parcelable{
 	public int test = 0;
 	private String devID;
-	private String vendorID;
 	/**
 	 *  Packet information:
 	 *  Using a stream of integers
@@ -28,26 +27,22 @@ public class Device implements Parcelable{
 	public Device()
 	{
 		devID = "";
-		vendorID = null;
 	}
 
-	public Device(String vendorID)
+	public Device(String devID)
 	{
-		this.devID = "";
-		this.vendorID = new String(vendorID);
+		this.devID = new String(devID);
 	}
 
 	public Device(Device device)
 	{
 		this.devID      = new String(device.devID);
-		this.vendorID   = new String(device.vendorID);
 		this.mSensor    = new HashMap<Integer, ArrayList<Integer>>();
 	}
 
 	public Device(String vendorID, String devID)
 	{
 		this.devID = new String(devID);
-		this.vendorID = new String(vendorID);
 		mSensor    = new HashMap<Integer, ArrayList<Integer>>();
 	}
 
@@ -59,16 +54,6 @@ public class Device implements Parcelable{
 	public void setDevID(String devID)
 	{
 		this.devID = new String(devID);
-	}
-
-	public String getVendorID()
-	{
-		return vendorID;
-	}
-
-	public void setVendorID(String vendorID)
-	{
-		this.vendorID = vendorID;
 	}
 
 	synchronized public boolean addSensor(int sType, int rate[], int bundleSize[])
@@ -211,7 +196,6 @@ public class Device implements Parcelable{
 		{
 			Device device = new Device();
 			device.devID = src.readString();
-			device.vendorID = src.readString();
 			int mapSize = src.readInt();
 			if (mapSize > 0) {
 				for (int i = 0; i < mapSize; i++)
@@ -234,7 +218,6 @@ public class Device implements Parcelable{
 	@Override
 	public void writeToParcel(Parcel parcel, int flags) {
 		parcel.writeString(devID);
-		parcel.writeString(vendorID);
 		parcel.writeInt(mSensor.size());
 		if (mSensor.size() > 0) {
 			for(Map.Entry<Integer, ArrayList<Integer>> entry : mSensor.entrySet())

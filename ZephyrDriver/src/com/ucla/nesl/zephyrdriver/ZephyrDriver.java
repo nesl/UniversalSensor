@@ -27,6 +27,7 @@ import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 
 public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	private static String TAG = ZephyrDriver.class.getCanonicalName();
+	private String devID;
 	String bluetoothAddr = null;
 	private PowerManager.WakeLock mWakeLock;
 	private UniversalDriverManager mDriverManager;
@@ -396,7 +397,7 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 
 	private void init(int sType, int bundleSize)
 	{
-		DriverSensorData mData = new DriverSensorData(mDriverManager.getDevID(), sType, bundleSize);
+		DriverSensorData mData = new DriverSensorData(devID, sType, bundleSize);
 		mSensorDataMap.put(sType, mData);
 	}
 	
@@ -412,8 +413,9 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	@Override
 	public void run() {
 		Log.i(TAG, "Zephyr Driver thread started " + bluetoothAddr);
+		devID = new String("Zephyr-" + bluetoothAddr);
 		tryToConnect();
-		mDriverManager = UniversalDriverManager.create(context, "Zephyr-" + bluetoothAddr);
+		mDriverManager = UniversalDriverManager.create(context, devID);
 		try {
 			Thread.sleep(1500);
 		} catch (InterruptedException e) {

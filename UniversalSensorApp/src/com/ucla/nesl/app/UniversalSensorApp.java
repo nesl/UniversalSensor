@@ -83,11 +83,15 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             @Override
             public void onClick(View v) {
             	dlist = mManager.listDevices();
+            	if (dlist == null) {
+            		Log.i(tag, "no elements");
+            		return;
+            	}
             	Log.i(tag, "listing devices " + dlist.size());
 
             	for (Device device:mManager.listDevices())
             	{
-            		Log.i(tag, device.getVendorID() +":" + device.getDevID());
+            		Log.i(tag, device.getDevID());
 
 
             		for (Integer i : device.getSensorList())

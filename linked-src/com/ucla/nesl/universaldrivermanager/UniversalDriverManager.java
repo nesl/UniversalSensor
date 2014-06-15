@@ -22,31 +22,24 @@ public class UniversalDriverManager {
 	private UniversalDriverRemoteConnection remoteConnection;
 	private Device device = null;
 	private String devID  = null;
-	private String vendorID = null;
 	UniversalDriverManagerStub mDriverManagerStub;
 	boolean once = true;
 	
-	public static UniversalDriverManager create(Context context, String vendorID)
+	public static UniversalDriverManager create(Context context, String devID)
 	{
 		//		if (mManager != null)
 		//			return mManager;
 		//		mManager = new UniversalDriverManager(context);
 		//		return mManager;
-		return new UniversalDriverManager(context, vendorID);
+		return new UniversalDriverManager(context, devID);
 	}
 
-	public UniversalDriverManager(Context context, String vendorID) {
+	public UniversalDriverManager(Context context, String devID) {
 		this.context = context;
-		device = new Device(vendorID);
-		this.vendorID = new String(vendorID);
+		device = new Device(devID);
 		remoteConnection = new UniversalDriverRemoteConnection(this);
 		mDriverManagerStub = null;
 		connectRemote();
-	}
-
-	public String getVendorID()
-	{
-		return vendorID;
 	}
 
 	private void connectRemote()
@@ -68,11 +61,6 @@ public class UniversalDriverManager {
 		return true;
 	}
 
-	public String getDevID()
-	{
-		return devID;
-	}
-
 	/**
 	 * Function to register a particular sensor with the UniversalService
 	 * @param mlistener 
@@ -83,12 +71,6 @@ public class UniversalDriverManager {
 	 */
 	public boolean registerDriver(UniversalDriverListener mlistener, int sType, int rate[], int bundleSize[])
 	{
-		// devID null means that the connection establishment is not yet complete
-		// TODO: wait and retry after sometime
-		if (devID == null) {
-			return false;
-		}
-
 		// Check if sensor is already registered
 		if (device.addSensor(sType, rate, bundleSize) == false) {
 			Log.i(tag, "sType " + sType + " already registered");
@@ -98,7 +80,7 @@ public class UniversalDriverManager {
 		if (mDriverManagerStub == null)
 			mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);
 
-		Log.d(tag, "Registering new sensor, vendor id: " + device.getVendorID() + ", sensor type:" + sType);
+		Log.d(tag, "Registering new sensor, vendor id: " + device.getDevID() + ", sensor type:" + sType);
 		try {
 			remoteConnection.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
 		} catch (RemoteException e) {

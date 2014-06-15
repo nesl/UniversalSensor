@@ -20,6 +20,7 @@ import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 public class UniversalDriverService extends Service implements SensorEventListener, UniversalDriverListener {
 	private static String tag = UniversalDriverService.class.getCanonicalName();
 	private static Boolean flag = false;
+	private String devID = "phoneSensor1";
 	Handler handler, h2;
 	SensorManager mSensorManager;
 	Sensor mSensor;
@@ -46,7 +47,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // This is the driver.
-        mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), "phoneSensor1");
+        mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), devID);
         if (mdriverManager1 == null) {
         	Log.e(tag, "mdrivermanager is null, this is not possible");
         } else {
@@ -111,7 +112,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	public void onSensorChanged(SensorEvent event) {
 		UniversalSensorEvent[] mUniversalSensorEvent = new UniversalSensorEvent[1];
 		mUniversalSensorEvent[0] = new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp);
-		mUniversalSensorEvent[0].devID = mdriverManager1.getDevID();
+		mUniversalSensorEvent[0].devID = devID;
 		mdriverManager1.push(mUniversalSensorEvent, 1);
 	}
 
