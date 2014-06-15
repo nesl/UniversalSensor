@@ -124,6 +124,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		}
 		return -1;
 	}
+
 	@Override
 	public void setRate(int sType, int rate, int bundleSize) {
 		Log.i(tag, "setRate:: sType: " + sType + ", rate: " + rate + ", bundleSize: " + bundleSize);

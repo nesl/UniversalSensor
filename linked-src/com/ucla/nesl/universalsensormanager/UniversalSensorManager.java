@@ -21,20 +21,20 @@ public class UniversalSensorManager {
 	private UniversalManagerRemoteConnection remoteConnection;
 	private Context context;
 	private static String tag = UniversalSensorManager.class.getCanonicalName();
-	//	private ConnectionCallback cb = new ConnectionCallback();
 
 	public static UniversalSensorManager create(Context context) {
 		if (mManager != null) {
-			Log.i(tag, "manager is present");
+			Log.d(tag, "UniversalSensorManager object already exists. Returning the same.");
 			return mManager;
 		}
-		Log.i(tag, "creating a new manager object");
+		Log.d(tag, "Creating a new UniversalSensorManager object");
 		mManager = new UniversalSensorManager(context);
 		return mManager;
 	}
 
 	private UniversalSensorManager(Context context) {
 		this.context = context;
+		Log.d(tag, "Instantiating binder connection with UniversalService");
 		remoteConnection = new UniversalManagerRemoteConnection(this);
 		mstub = new UniversalSensorManagerStub(this);
 		connectRemote();
@@ -45,18 +45,19 @@ public class UniversalSensorManager {
 		try {
 			return remoteConnection.listDevices();
 		} catch (RemoteException e) {
+			Log.e(tag, "listDevices returned with error " + e);
 			return null;
 		}
 	}
 
-	public boolean registerListener(UniversalEventListener mlistener, //UniversalSensor sensor, 
-			String devID, int sType, int rateUs, int bundleSize) {
+	public boolean registerListener(UniversalEventListener mlistener, 
+			String devID, int sType, boolean periodic, int rateUs, int bundleSize) {
 		if (mstub == null) {
 			Log.i(tag, "mstub is null " + devID);
 			return false;
 		}
 		mstub.registerListener(mlistener);
-		remoteConnection.registerListener(mstub, devID, sType, rateUs, bundleSize);
+		remoteConnection.registerListener(mstub, devID, sType, periodic, rateUs, bundleSize);
 		return true;
 	}
 
@@ -101,13 +102,13 @@ public class UniversalSensorManager {
 		}
 
 		@Override
-		public void notifyDeviceChange(Device mdevice) throws RemoteException {
-			Log.i(tag, "new device available " + mdevice.getDevID() + ", sensorList: " + mdevice.getSensorList());
+		public void notifyNewDevice(Device mdevice) {
+			mlistener.notifyNewDevice(mdevice);
 		}
 
 		@Override
-		public void notifySensorChanged(String devID, int sType, int action)
-				throws RemoteException {
+		public void notifySensorChanged(String devID, int sType, int action) {
+			mlistener.notifySensorChanged(devID, sType, action);
 		}
 	}
 }

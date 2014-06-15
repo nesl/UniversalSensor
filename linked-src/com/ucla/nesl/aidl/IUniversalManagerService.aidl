@@ -8,8 +8,9 @@ import com.ucla.nesl.aidl.SensorParcel;
 
 interface IUniversalManagerService {
 	java.util.List<Device> listDevices();
-	boolean registerListener(IUniversalSensorManager mManager, String devID, int sType, int rateUs, int bundleSize);
+	boolean registerListener(IUniversalSensorManager mManager, String devID, int sType, boolean periodic, int rateUs, int bundleSize);
 	boolean unregisterListener(String devID, int sType);
+	SensorParcel[] fetchRecord(String devID, int sType);
 	boolean registerDriver(in Device device, IUniversalDriverManager mDriver, int sType, in int[] rate, in int[] bundleSize);
 	boolean unregisterDriver(String devID, int sType);
 	void registerNotification(IUniversalSensorManager mManager);

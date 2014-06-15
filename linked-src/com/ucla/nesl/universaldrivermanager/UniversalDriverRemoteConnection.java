@@ -11,16 +11,19 @@ import com.ucla.nesl.aidl.IUniversalManagerService;
 import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager.UniversalDriverManagerStub;
 
-public class UniversalDriverRemoteConnection implements ServiceConnection {
+public class UniversalDriverRemoteConnection implements ServiceConnection
+{
 	private IUniversalManagerService service;
 	private UniversalDriverManager parent;
 
-	UniversalDriverRemoteConnection(UniversalDriverManager parent) {
+	UniversalDriverRemoteConnection(UniversalDriverManager parent)
+	{
 		this.parent = parent;
 	}
 
 	@Override
-	public void onServiceConnected(ComponentName name, IBinder service) {
+	public void onServiceConnected(ComponentName name, IBinder service)
+	{
 		this.service = IUniversalManagerService.Stub.asInterface(service);
 		try {
 			parent.setDevID(this.service.getDevID());
@@ -28,8 +31,10 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 	}
 
 	@Override
-	public void onServiceDisconnected(ComponentName name) {
-	}		
+	public void onServiceDisconnected(ComponentName name)
+	{
+		this.service = null;
+	}
 
 	public void push(SensorParcel[] sp, int length)
 	{
@@ -48,15 +53,5 @@ public class UniversalDriverRemoteConnection implements ServiceConnection {
 	{
 		return service.unregisterDriver(devID, sType);
 	}
-
-	//	public void pushArray(SensorParcel[] sp)
-	//	{
-	//		try {
-	//			service.onSensorChangedArray(sp, sp.length);
-	//		} catch (RemoteException e) {
-	//			// TODO Auto-generated catch block
-	//			e.printStackTrace();
-	//		}
-	//	}
 }
 

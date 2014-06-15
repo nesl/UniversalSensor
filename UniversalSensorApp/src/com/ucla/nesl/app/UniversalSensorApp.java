@@ -38,7 +38,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
 	private ArrayList<Device> dlist;
 	Device device;
-	
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +63,10 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             	}
 
             	dlist = mManager.listDevices();
+            	if (dlist == null) {
+            		Log.e(tag, "list returned null");
+            		return;
+            	}
             	int devNum = Integer.valueOf(value.split(":")[0]);
             	int sType = Integer.valueOf(value.split(":")[1]);
             	int rate = Integer.valueOf(value.split(":")[2]);
@@ -130,7 +134,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 			}
 	    });
 	    startZephyr.setOnClickListener(new OnClickListener() {
-			
 			@Override
 			public void onClick(View arg0) {
 				String bluetoothAddr = edittext.getText().toString();
@@ -139,13 +142,13 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 					Log.i(tag, "bluetoothAddr is empty");
 					return;
 				}
-				Intent intent = new Intent("ZephyrDriverBroadcastReceiver");
+				Intent intent = new Intent("ScanDevice");
 				intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-				intent.putExtra("bluetoothAddr", bluetoothAddr);
 //				intent.setAction("ZephyrDriverBroadcastReceiver");
 				startService(intent);
 			}
 		});
+
 	    startTestDriver.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -182,7 +185,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     	currentTime = System.currentTimeMillis();
     	oldTime  = 0;
     	val = 0;
-    	mManager.registerListener(this, devID, sType, rate, bundleSize);
+    	mManager.registerListener(this, devID, sType, false, rate, bundleSize);
     }
     
     private void unregisterListener(String devID, int sType)
@@ -219,5 +222,16 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 	@Override
 	public void onAccuracyChanged(UniversalSensor sensor, int accuracy) {
+	}
+
+	@Override
+	public void notifySensorChanged(String devID, int sType, int action) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void notifyNewDevice(Device mdevice) {
+		Log.d(tag, "new device available " + mdevice.getDevID() + ", sensorList: " + mdevice.getSensorList());
 	}
 }

@@ -62,6 +62,7 @@ public class UniversalServiceListener extends Thread {
 		int						rate 	 	= -1;
 		int 					bundleSize  = 0;
 		String 					sensorID 	= null;
+		boolean					periodic	= false;
 		UniversalServiceSensor 	universalSensor = null; 
 		_Sensor 				mSensor		= null;
 
@@ -72,11 +73,11 @@ public class UniversalServiceListener extends Thread {
 
 		synchronized (sensorMap) {
 			if (!sensorMap.containsKey(sensorID)) {
-				mSensor = new _Sensor(this, mlistener, sensorID, universalSensor, rate, bundleSize);
+				mSensor = new _Sensor(this, mlistener, sensorID, universalSensor, periodic, rate, bundleSize);
 				sensorMap.put(sensorID, mSensor);
 			} else {
 				mSensor = sensorMap.get(sensorID);
-				mSensor.updateListenerParam(rate, bundleSize);
+				mSensor.updateListenerParam(periodic, rate, bundleSize);
 			}
 		}
 
@@ -176,12 +177,10 @@ public class UniversalServiceListener extends Thread {
 		return mService.generateListenerKey(callingPid);
 	}
 	
-	private void notifyDeviceChange(Device mdevice)
+	private void notifyNewDevice(Device mdevice)
 	{
 		try {
-			Log.i(tag, "sending notification");
-			mlistener.notifyDeviceChange(mdevice);
-			Log.i(tag, "notification sent");
+			mlistener.notifyNewDevice(mdevice);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -201,6 +200,17 @@ public class UniversalServiceListener extends Thread {
 				mSensor.updateSamplingParam(sRate, sBundleSize);
 			}
 		}
+	}
+
+	public SensorParcel[] pushData(String mSensorKey)
+	{
+		_Sensor mSensor = null;
+		synchronized (sensorMap) {
+			if (sensorMap.containsKey(mSensorKey)) {
+				mSensor = sensorMap.get(mSensorKey);
+			}
+		}
+		return mSensor.pushData();
 	}
 
 	@Override
@@ -223,8 +233,8 @@ public class UniversalServiceListener extends Thread {
 				case UniversalConstants.MSG_Link_Sensor:
 					linkSensor((HashMap<String, Object>) msg.obj);
 					break;
-				case UniversalConstants.MSG_NotifyDeviceChanged:
-					notifyDeviceChange((Device) msg.obj);
+				case UniversalConstants.MSG_NotifyNewDevice:
+					notifyNewDevice((Device) msg.obj);
 					break;
 				case UniversalConstants.MSG_UpdateSamplingParam:
 					updateSamplingParam((Bundle) msg.obj);
@@ -250,18 +260,20 @@ public class UniversalServiceListener extends Thread {
 		int						sRate 	    = -1;
 		int					    sbundleSize = 0;
 		String 					sensorID 	= null;
+		boolean					periodic	= false;
 		ArrayList<SensorParcel> eventQueue  = null;
 		UniversalServiceSensor 	mSensor  	= null;
 		UniversalServiceListener parent     = null;
 		IUniversalSensorManager mlistener    = null;
 
 		public _Sensor(UniversalServiceListener parent, IUniversalSensorManager mlistener,
-				String sensorID, UniversalServiceSensor mSensor, int lRate, int bundleSize)
+				String sensorID, UniversalServiceSensor mSensor, boolean periodic, int lRate, int bundleSize)
 		{
 			this.parent    = parent;
 			this.mlistener = mlistener;
 			this.sensorID  = new String(sensorID);
 			this.mSensor   = mSensor;
+			this.periodic  = periodic;
 			this.lRate     = lRate;
 			this.lbundleSize = bundleSize;
 			eventQueue 		= new ArrayList<SensorParcel>();
@@ -272,8 +284,9 @@ public class UniversalServiceListener extends Thread {
 			counter = (int) Math.ceil(1.0*sRate/lRate);
 		}
 
-		public void updateListenerParam(int lRate, int lBundleSize)
+		public void updateListenerParam(boolean periodic, int lRate, int lBundleSize)
 		{
+			this.periodic  = periodic;
 			this.lRate     = lRate;
 			this.lbundleSize = lBundleSize;
 			updatecounter();
@@ -299,6 +312,11 @@ public class UniversalServiceListener extends Thread {
 			return mSensor.linkListener(""+parent.callingPid, parent, lRate, lbundleSize);
 		}
 
+		private void queueData()
+		{
+			while (eventQueue.size() <= lbundleSize)
+				eventQueue.remove(0);
+		}
 		private void sendData()
 		{
 			SensorParcel[] eventBundle = null;
@@ -320,7 +338,20 @@ public class UniversalServiceListener extends Thread {
 			}
 		}
 
-		public void onSensorChaged(SensorParcel[] sp, int length)
+		synchronized public SensorParcel[] pushData()
+		{
+			if (periodic == false)
+				return null;
+			
+			SensorParcel[] eventBundle = new SensorParcel[lbundleSize];
+			for (int i = 0; i < lbundleSize && eventQueue.size() > 0; i++) {
+				eventBundle[i] = eventQueue.remove(0);
+			}
+			return eventBundle;
+		}
+		
+
+		synchronized public void onSensorChaged(SensorParcel[] sp, int length)
 		{
 			for (int i = 0; i < sp.length; i++) {
 				counter--;
@@ -329,7 +360,10 @@ public class UniversalServiceListener extends Thread {
 					updatecounter();
 				}
 			}
-			sendData();
+			if (periodic)
+				queueData();
+			else
+				sendData();
 		}
 	}
 }

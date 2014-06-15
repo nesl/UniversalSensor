@@ -93,7 +93,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 					Log.e(tag, "mhandler of " + mlistener.callingPid + " is null");
 					continue;
 				}
-				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_NotifyDeviceChanged, mdevice));
+				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_NotifyNewDevice, mdevice));
 			}
 		}
 		return true;
@@ -294,7 +294,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	// TODO: Check if the listener has already registered
 	@Override
 	public boolean registerListener(IUniversalSensorManager mManager,
-			String devID, int sType, int rate, int bundleSize) throws RemoteException {
+			String devID, int sType, boolean periodic, int rate, int bundleSize) throws RemoteException {
 		String mSensorKey   = generateSensorKey(devID, sType);
 		int listenerPid     = Binder.getCallingPid();
 		String mListenerKey = generateListenerKey(listenerPid);
@@ -332,6 +332,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		Map<String, Object> mMap = new HashMap<String, Object>();
 		mMap.put("key", mSensorKey);
 		mMap.put("value", mSensor);
+		mMap.put("periodic", periodic);
 		mMap.put("rate", Integer.valueOf(rate));
 		mMap.put("bundleSize", Integer.valueOf(bundleSize));
 
@@ -384,6 +385,24 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		return true;
 	}
 
+	@Override
+	public SensorParcel[] fetchRecord(String devID, int sType) {
+		String mListenerKey = generateListenerKey(Binder.getCallingPid());
+		String mSensorKey = generateSensorKey(devID, sType);
+		UniversalServiceListener mlistener;
+		//			Handler mHandler;
+
+		Log.d(tag, "unregisterListener on " + devID + ":" + sType);
+		// remove the entry from registeredListener
+		if (!hasRegisteredListener(mListenerKey)) {
+			Log.i(tag, "Failed to unregister listener to sensor " + devID + ":" + UniversalSensorNameMap.getName(sType));
+			return null;
+		}
+		mlistener = getRegisteredListener(mListenerKey);
+		
+		return mlistener.pushData(mSensorKey);
+	}
+	
 	public boolean unregisterListenerAll(String listenerKey)
 	{
 		UniversalServiceListener mlistener;

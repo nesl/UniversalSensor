@@ -29,7 +29,6 @@ public class UniversalSensorEvent extends SensorParcel {
 	//	}
 
 	public UniversalSensorEvent() {
-		// TODO Auto-generated constructor stub
 	}
 
 	

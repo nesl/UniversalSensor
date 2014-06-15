@@ -37,6 +37,7 @@ public class Zephyr extends Service {
 
 		if (bluetoothAddr == null)
 			return 0;
+
 		thread = instanceMap.get(bluetoothAddr);
 		if ((thread == null) || (thread.isAlive() == false)) {
 			thread = new Thread(new ZephyrDriver(getApplicationContext(), bluetoothAddr));

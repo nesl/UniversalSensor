@@ -39,28 +39,11 @@ public class SensorParcel implements Parcelable {
 		for (int i = 0; i < valueSize; i++)
 			this.values[i] = values[i];
 	}
-	
-	public SensorParcel(SensorParcel sp)
-	{
-		this.devID = new String(sp.devID);
-		this.sType = sp.sType;
-		this.timestamp = sp.timestamp;
-		this.accuracy = sp.accuracy;
-		this.valueSize = sp.valueSize;
-		this.values = new float[sp.valueSize];
 
-		// try System.arraycopy();
-		for (int i = 0; i < valueSize; i++) {
-			this.values[i]	= sp.values[i];
-		}
-	}
-
-	public SensorParcel(String devID, int sType, float[] values,  int valueSize, int accuracy,
-			float timestamp) {
+	private void makeCopy(String devID, int sType, float[] values,  int valueSize, float timestamp) {
 		this.devID = devID;
 		this.sType = sType;
 		this.timestamp = timestamp;
-		this.accuracy = accuracy;
 		this.valueSize = valueSize;
 		this.values = new float[valueSize];
 
@@ -68,14 +51,24 @@ public class SensorParcel implements Parcelable {
 		for (int i = 0; i < valueSize; i++) {
 			this.values[i]	= values[i];
 		}
-
+	}
+	public SensorParcel(SensorParcel sp)
+	{
+		makeCopy(sp.devID, sp.sType, sp.values, sp.valueSize,sp.timestamp);
 	}
 
-	public SensorParcel(int sType, float[] values, float timestamp) {
-		this.sType = sType;
+	public SensorParcel(String devID, int sType, float[] values,  int valueSize, int accuracy,
+			float timestamp)
+	{
+		makeCopy(devID, sType, values, valueSize, timestamp);
+	}
+
+	public SensorParcel(int sType, float[] values, float timestamp)
+	{
+		this.sType 	   = sType;
 		this.timestamp = timestamp;
 		this.valueSize = values.length;
-		this.values = new float[valueSize];
+		this.values    = new float[valueSize];
 
 		// try System.arraycopy();
 		for (int i = 0; i < valueSize; i++) {
@@ -84,12 +77,14 @@ public class SensorParcel implements Parcelable {
 	}
 
 	@Override
-	public int describeContents() {
+	public int describeContents() 
+	{
 		return 0;
 	}
 
 	@Override
-	public void writeToParcel(Parcel dest, int flags) {
+	public void writeToParcel(Parcel dest, int flags)
+	{
 		dest.writeString(devID);
 		dest.writeInt(sType);
 		dest.writeFloatArray(values);
@@ -98,7 +93,8 @@ public class SensorParcel implements Parcelable {
 		dest.writeFloat(timestamp);
 	}
 
-	public static final Parcelable.Creator<SensorParcel> CREATOR = new Creator<SensorParcel>() {
+	public static final Parcelable.Creator<SensorParcel> CREATOR = new Creator<SensorParcel>()
+	{
 		public SensorParcel createFromParcel(Parcel src)
 		{
 			SensorParcel sp = new SensorParcel();
@@ -112,7 +108,8 @@ public class SensorParcel implements Parcelable {
 		}
 
 		@Override
-		public SensorParcel[] newArray(int size) {
+		public SensorParcel[] newArray(int size) 
+		{
 			return new SensorParcel[size];
 		}
 	};
