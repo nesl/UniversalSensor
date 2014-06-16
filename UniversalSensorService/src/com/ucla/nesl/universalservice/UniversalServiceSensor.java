@@ -13,6 +13,7 @@ import android.util.Log;
 import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.SensorParcelWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
+import com.ucla.nesl.universaldatastore.UniversalDataStore;
 
 public class UniversalServiceSensor {
 	private static String tag = UniversalServiceSensor.class.getCanonicalName();
@@ -158,17 +159,21 @@ public class UniversalServiceSensor {
 		updateSamplingParams();
 	}
 
-	@SuppressWarnings("unchecked")
 	public void onSensorChanged(SensorParcel[] event, int length)
 	{
+		SensorParcelWrapper mSensorParcelWrapper = new SensorParcelWrapper(event, length);
 		synchronized (listenersList) {
 			// Go through the list of listeners and send the data to them
 			for (Map.Entry<String, _Listener> entry : listenersList.entrySet())
 			{
 				Handler mhandler = entry.getValue().getHandler();
-				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, new SensorParcelWrapper(event, length)));
+				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, mSensorParcelWrapper));
 			}
 		}
+		// TODO: send it to the datastore too
+		Handler mHandler = UniversalDataStore.getHandler();
+		if (mHandler != null)
+			mHandler.sendMessage(mHandler.obtainMessage(UniversalConstants.MSG_STORE_RECORD, mSensorParcelWrapper));
 	}
 
 	public boolean isEmpty()

@@ -40,17 +40,17 @@ public class UniversalSensorEvent extends SensorParcel {
 		super(devID, sType);
 	}
 	
-	public void setDataValues(float[] values, float timestamp)
+	public void setDataValues(float[] values, long timestamp)
 	{
 		super.setDataValues(values, timestamp);
 	}
 	
-	public UniversalSensorEvent(String devID, int sType, float[] values, float timestamp)
+	public UniversalSensorEvent(String devID, int sType, float[] values, long timestamp)
 	{
 		super(devID, sType, values, values.length, 0,timestamp);
 	}
 
-	public UniversalSensorEvent(int sType, float[] values, float timestamp)
+	public UniversalSensorEvent(int sType, float[] values, long timestamp)
 	{
 		super(sType, values, timestamp);
 	}

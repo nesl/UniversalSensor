@@ -76,6 +76,7 @@ public class UniversalSensorManager {
 
 	public void registerNotification(UniversalEventListener mlistener)
 	{
+		mstub.registerListener(mlistener);
 		remoteConnection.registerNotification(mstub);
 	}
 

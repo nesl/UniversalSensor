@@ -156,7 +156,7 @@ public class UniversalServiceListener extends Thread {
 		synchronized (sensorMap) {
 			if (sensorMap.containsKey(event[0].mSensorKey)) {
 				mSensor = sensorMap.get(event[0].mSensorKey);
-				mSensor.onSensorChaged(event, length);
+				mSensor.onSensorChanged(event, length);
 			}
 		}
 		//		try {
@@ -351,7 +351,7 @@ public class UniversalServiceListener extends Thread {
 		}
 		
 
-		synchronized public void onSensorChaged(SensorParcel[] sp, int length)
+		synchronized public void onSensorChanged(SensorParcel[] sp, int length)
 		{
 			for (int i = 0; i < sp.length; i++) {
 				counter--;

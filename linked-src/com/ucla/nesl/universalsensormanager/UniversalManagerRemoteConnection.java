@@ -58,9 +58,9 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		}
 		try {
 			service.registerListener(cb, devID, sType, periodic, rateUs, bundleSize);
-		}catch(RemoteException e)
-		{
-			
+		}catch(RemoteException e) {
+			Log.e(tag, "registerListener");
+			e.printStackTrace();
 		}
 		return true;
 	}
@@ -75,7 +75,10 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		
 		try {
 			service.unregisterListener(devID, sType);
-		}catch(RemoteException e){}
+		}catch(RemoteException e){
+			Log.e(tag, "unregisterListener");
+			e.printStackTrace();
+		}
 		
 		return true;
 	}
@@ -90,7 +93,10 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		
 		try {
 			service.registerNotification(cb);
-		} catch (RemoteException e) {}
+		} catch (RemoteException e) {
+			Log.e(tag, "registerNotification");
+			e.printStackTrace();
+		}
 		return true;
 	}
 }

@@ -10,7 +10,7 @@ public class SensorParcel implements Parcelable {
 	public int sType;
 	public int valueSize;
 	public float values[];
-	public float timestamp;
+	public long timestamp;
 	public int accuracy;
 	public String mSensorKey;
 
@@ -33,14 +33,14 @@ public class SensorParcel implements Parcelable {
 		values     = new float[valueSize];
 	}
 	
-	public void setDataValues(float[] values, float timestamp)
+	public void setDataValues(float[] values, long timestamp)
 	{
 		this.timestamp = timestamp;
 		for (int i = 0; i < valueSize; i++)
 			this.values[i] = values[i];
 	}
 
-	private void makeCopy(String devID, int sType, float[] values,  int valueSize, float timestamp) {
+	private void makeCopy(String devID, int sType, float[] values,  int valueSize, long timestamp) {
 		this.devID = devID;
 		this.sType = sType;
 		this.timestamp = timestamp;
@@ -58,12 +58,12 @@ public class SensorParcel implements Parcelable {
 	}
 
 	public SensorParcel(String devID, int sType, float[] values,  int valueSize, int accuracy,
-			float timestamp)
+			long timestamp)
 	{
 		makeCopy(devID, sType, values, valueSize, timestamp);
 	}
 
-	public SensorParcel(int sType, float[] values, float timestamp)
+	public SensorParcel(int sType, float[] values, long timestamp)
 	{
 		this.sType 	   = sType;
 		this.timestamp = timestamp;
@@ -90,7 +90,7 @@ public class SensorParcel implements Parcelable {
 		dest.writeFloatArray(values);
 		dest.writeInt(valueSize);
 		dest.writeInt(accuracy);
-		dest.writeFloat(timestamp);
+		dest.writeLong(timestamp);
 	}
 
 	public static final Parcelable.Creator<SensorParcel> CREATOR = new Creator<SensorParcel>()
@@ -103,7 +103,7 @@ public class SensorParcel implements Parcelable {
 			sp.values = src.createFloatArray();
 			sp.valueSize = src.readInt();
 			sp.accuracy = src.readInt();
-			sp.timestamp = src.readFloat();
+			sp.timestamp = src.readLong();
 			return sp;
 		}
 

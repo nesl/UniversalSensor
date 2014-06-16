@@ -19,12 +19,14 @@ import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorNameMap;
+import com.ucla.nesl.universaldatastore.UniversalDataStore;
 
 public class UniversalManagerService extends IUniversalManagerService.Stub {
 	private static String tag = UniversalManagerService.class.getCanonicalName();
 	private Handler mHandler = null; // Cleanup handler
 	private Thread cleanupThread;
 	UniversalService parent;
+	UniversalDataStore mUniversalDataStore = null;
 	Map<String, UniversalServiceDevice> registeredDevices = new HashMap<String, UniversalServiceDevice>();
 	HashMap<String, UniversalServiceListener> registeredListeners = new HashMap<String, UniversalServiceListener>();
 
@@ -35,7 +37,6 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		public void run() {
 			Looper.prepare();
 			mHandler = new Handler() {
-				@SuppressWarnings("unchecked")
 				@Override
 				public void handleMessage(Message msg) {
 					switch (msg.what) {
@@ -58,14 +59,18 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	}
 	
 	public UniversalManagerService(UniversalService parent) {
-		this.parent = parent;
+		this.parent   = parent;
 		cleanupThread = new Thread(cleanupRunnable);
 		cleanupThread.start();
+		
+		// Create the DataStore thread
+		mUniversalDataStore = new UniversalDataStore(parent.getApplicationContext());
+		mUniversalDataStore.start();
 	}
 
 	public String generateSensorKey(String devID, int sType)
 	{
-		return ""+ devID + "-" + sType;
+		return ""+ devID + "_" + sType;
 	}
 
 	public String generateListenerKey(int pid)
@@ -241,7 +246,6 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	//			return true;
 	//		}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean unregisterDriver(String devID, int sType) {
 		// remove the entry from the registeredDevices,

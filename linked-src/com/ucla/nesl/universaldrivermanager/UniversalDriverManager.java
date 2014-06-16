@@ -1,8 +1,5 @@
 package com.ucla.nesl.universaldrivermanager;
 
-import java.util.HashMap;
-
-import android.R.string;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
@@ -10,7 +7,6 @@ import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
-import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensorEvent;
 
@@ -81,12 +77,8 @@ public class UniversalDriverManager {
 			mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);
 
 		Log.d(tag, "Registering new sensor, vendor id: " + device.getDevID() + ", sensor type:" + sType);
-		try {
-			remoteConnection.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
-		} catch (RemoteException e) {
-			return false;
-			// Also remove the sensor from registered list
-		}
+
+		remoteConnection.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
 		return true;
 	}
 
@@ -94,10 +86,8 @@ public class UniversalDriverManager {
 	{
 		Log.i(tag, "unregistering the device " + devID);
 
-		try {
 			device.removeSensor(sType);
 			remoteConnection.unregisterDriver(device.getDevID(), sType);
-		} catch (RemoteException e) {return false;}
 		return true;
 	}
 

@@ -13,6 +13,7 @@ import com.ucla.nesl.universaldrivermanager.UniversalDriverManager.UniversalDriv
 
 public class UniversalDriverRemoteConnection implements ServiceConnection
 {
+	private static String tag = UniversalDriverManager.class.getCanonicalName();
 	private IUniversalManagerService service;
 	private UniversalDriverManager parent;
 
@@ -36,19 +37,35 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 	public void push(SensorParcel[] sp, int length)
 	{
 		try {
+			// Service can be null here, so try to reconnect and fail this 
 			service.onSensorChanged(sp, length);
-		} catch(RemoteException e) {}
+		} catch (RemoteException e) {
+			Log.e(tag, "push");
+			e.printStackTrace();
+		}
 	}
 
 	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub,
-			int sType, int rate[], int bundleSize[]) throws RemoteException
-			{
-		return service.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
-			}
-
-	public boolean unregisterDriver(String devID, int sType) throws RemoteException
+			int sType, int rate[], int bundleSize[])
 	{
-		return service.unregisterDriver(devID, sType);
+		try {
+			return service.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
+		} catch (RemoteException e) {
+			Log.e(tag, "registerDriver");
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean unregisterDriver(String devID, int sType)
+	{
+		try {
+			return service.unregisterDriver(devID, sType);
+		} catch (RemoteException e) {
+			Log.e(tag, "unregisterDriver ");
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
 

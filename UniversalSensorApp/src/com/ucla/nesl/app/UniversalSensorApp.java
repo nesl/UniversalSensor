@@ -2,13 +2,12 @@ package com.ucla.nesl.app;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
-import android.R.integer;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -52,7 +51,11 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         startZephyr = (Button)findViewById(R.id.startZephyr);
         startTestDriver = (Button)findViewById(R.id.startTestDriver);
         mManager = UniversalSensorManager.create(getApplicationContext());
-        
+        PowerManager.WakeLock mWakeLock;
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
+		mWakeLock.setReferenceCounted(false);
+		mWakeLock.acquire();
         register.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {

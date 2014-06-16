@@ -12,7 +12,7 @@ public class DriverSensorData {
 		}
 	}
 
-	public void setDataValues(float[] values, float timestamp)
+	public void setDataValues(float[] values, long timestamp)
 	{
 		event[index++].setDataValues(values, timestamp);
 	}
