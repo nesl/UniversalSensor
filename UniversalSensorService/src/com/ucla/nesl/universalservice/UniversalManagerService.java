@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
@@ -16,6 +18,7 @@ import com.ucla.nesl.aidl.IUniversalDriverManager;
 import com.ucla.nesl.aidl.IUniversalManagerService;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.HelperWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorNameMap;
@@ -481,5 +484,30 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_ListHistoricalDevices, mListenerStub));
 
 		return true;
+	}
+
+	@Override
+	public boolean fetchHistoricalData(IUniversalSensorManager mListener,
+			int txnID, String devID, int sType, long start, long end,
+			long interval, int function) throws RemoteException {
+
+		Bundle mBundle = new Bundle();
+		mBundle.putString("tableName", generateSensorKey(devID, sType));
+		mBundle.putInt("txnID", txnID);
+		mBundle.putString("devID", devID);
+		mBundle.putInt("sType", sType);
+		mBundle.putLong("start", start);
+		mBundle.putLong("end", end);
+		mBundle.putLong("interval", interval);
+		mBundle.putInt("function", function);
+		Handler mhandler = UniversalDataStore.getHandler();
+		if (mhandler == null) {
+			Log.i(tag, "registerListener::handler is null");
+			return false;
+		}
+		
+		
+		mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_FETCH_HISTORICAL_DATA, new HelperWrapper(mListener, mBundle)));
+		return false;
 	}
 }

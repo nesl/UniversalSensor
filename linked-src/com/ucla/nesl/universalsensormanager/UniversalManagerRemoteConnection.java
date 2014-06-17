@@ -32,9 +32,15 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
 		Log.d(tag, "UniversalService disconnected");
+		mManager.disconnected();
 		this.service = null;
 	}
 
+	public boolean isConnected()
+	{
+		return service == null ? false : true;
+	}
+	
 	public ArrayList<Device> listDevices() throws RemoteException
 	{
 		// A better approach will be that we store the request and on connect
@@ -110,6 +116,24 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		
 		try {
 			return service.listHistoricalDevices(cb);
+		} catch (RemoteException e) {
+			Log.e(tag, "registerNotification");
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	public boolean fetchHistoricalData(UniversalSensorManagerStub cb, int txnID, String devID,
+			int sType, long start, long end, long interval, int cmd)
+	{
+		if (service == null) {
+			mManager.connectRemote();
+			Log.d(tag, "Service is not connected, failing registerNotification");
+			return false;
+		}
+		
+		try {
+			return service.fetchHistoricalData(cb, txnID, devID, sType, start, end, interval, cmd);
 		} catch (RemoteException e) {
 			Log.e(tag, "registerNotification");
 			e.printStackTrace();

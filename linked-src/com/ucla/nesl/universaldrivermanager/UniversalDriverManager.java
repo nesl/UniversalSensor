@@ -18,23 +18,19 @@ public class UniversalDriverManager {
 	private UniversalDriverRemoteConnection remoteConnection;
 	private Device device = null;
 	private String devID  = null;
-	UniversalDriverManagerStub mDriverManagerStub;
+	private UniversalDriverManagerStub mDriverManagerStub;
 	boolean once = true;
 	
-	public static UniversalDriverManager create(Context context, String devID)
+	public static UniversalDriverManager create(Context context, UniversalDriverListener mlistener, String devID)
 	{
-		//		if (mManager != null)
-		//			return mManager;
-		//		mManager = new UniversalDriverManager(context);
-		//		return mManager;
-		return new UniversalDriverManager(context, devID);
+		return new UniversalDriverManager(context, mlistener, devID);
 	}
 
-	public UniversalDriverManager(Context context, String devID) {
+	public UniversalDriverManager(Context context, UniversalDriverListener mlistener, String devID) {
 		this.context = context;
+		mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);
 		device = new Device(devID);
 		remoteConnection = new UniversalDriverRemoteConnection(this);
-		mDriverManagerStub = null;
 		connectRemote();
 	}
 
@@ -65,16 +61,13 @@ public class UniversalDriverManager {
 	 * @param bundleSize Number of samples sent in one bundle
 	 * @return Returns true on success and false on failure
 	 */
-	public boolean registerDriver(UniversalDriverListener mlistener, int sType, int rate[], int bundleSize[])
+	public boolean registerDriver(int sType, int rate[], int bundleSize[])
 	{
 		// Check if sensor is already registered
 		if (device.addSensor(sType, rate, bundleSize) == false) {
 			Log.i(tag, "sType " + sType + " already registered");
 			return false;
 		}
-
-		if (mDriverManagerStub == null)
-			mDriverManagerStub = new UniversalDriverManagerStub(this, mlistener);
 
 		Log.d(tag, "Registering new sensor, vendor id: " + device.getDevID() + ", sensor type:" + sType);
 
@@ -89,6 +82,16 @@ public class UniversalDriverManager {
 			device.removeSensor(sType);
 			remoteConnection.unregisterDriver(device.getDevID(), sType);
 		return true;
+	}
+
+	public void disconnected()
+	{
+		mDriverManagerStub.mlistener.disconnected();
+	}
+
+	public boolean isConnected()
+	{
+		return remoteConnection.isConnected();
 	}
 
 	public class UniversalDriverManagerStub extends IUniversalDriverManager.Stub {

@@ -32,6 +32,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 	public void onServiceDisconnected(ComponentName name)
 	{
 		this.service = null;
+		parent.disconnected();
 	}
 
 	public void push(SensorParcel[] sp, int length)
@@ -66,6 +67,11 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 			e.printStackTrace();
 		}
 		return false;
+	}
+	
+	public boolean isConnected()
+	{
+		return service == null ? false : true;
 	}
 }
 

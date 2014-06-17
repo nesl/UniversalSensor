@@ -3,6 +3,8 @@ package com.ucla.nesl.lib;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 import com.ucla.nesl.aidl.Device;
 
 public interface UniversalEventListener {
@@ -36,4 +38,8 @@ public interface UniversalEventListener {
 	void notifyNewDevice(Device mdevice);
 	
 	void listHistoricalDevices(Map<String, ArrayList<Integer>> deviceList);
+	
+	void historicalDataResponse(int txnID, String devID, int sType, int cmd, JSONObject result);
+	
+	void disconnected();
 }

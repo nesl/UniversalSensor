@@ -47,7 +47,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         // This is the driver.
-        mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), devID);
+        mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), this, devID);
         if (mdriverManager1 == null) {
         	Log.e(tag, "mdrivermanager is null, this is not possible");
         } else {
@@ -63,9 +63,9 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		// Exposing accelerometer for now. You can expose all the sensors.
 		// Only the exposed sensors will be visible to the applications
 
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_ACCELEROMETER, sensorRate.get(UniversalSensor.TYPE_ACCELEROMETER), bundleSize);
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_GYROSCOPE, sensorRate.get(UniversalSensor.TYPE_GYROSCOPE), bundleSize);
-        mdriverManager1.registerDriver(this, UniversalSensor.TYPE_MAGNETIC_FIELD, sensorRate.get(UniversalSensor.TYPE_MAGNETIC_FIELD), bundleSize);
+        mdriverManager1.registerDriver(UniversalSensor.TYPE_ACCELEROMETER, sensorRate.get(UniversalSensor.TYPE_ACCELEROMETER), bundleSize);
+        mdriverManager1.registerDriver(UniversalSensor.TYPE_GYROSCOPE, sensorRate.get(UniversalSensor.TYPE_GYROSCOPE), bundleSize);
+        mdriverManager1.registerDriver(UniversalSensor.TYPE_MAGNETIC_FIELD, sensorRate.get(UniversalSensor.TYPE_MAGNETIC_FIELD), bundleSize);
 	}
 
 	void unregister()
@@ -139,5 +139,11 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(sType), delay_type);
 	        Log.i(tag, "setRate " + sType + " rate " + rate + " delaytype " + delay_type);
 		}
+	}
+
+	@Override
+	public void disconnected() {
+		// TODO Auto-generated method stub
+		
 	}
 }

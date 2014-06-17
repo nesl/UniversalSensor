@@ -1,6 +1,13 @@
 package com.ucla.nesl.universaldatastore;
 
+import java.io.StringWriter;
+import java.util.HashMap;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -9,6 +16,7 @@ import android.util.Log;
 
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.HelperWrapper;
 import com.ucla.nesl.lib.SensorParcelWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 
@@ -47,6 +55,56 @@ public class UniversalDataStore extends Thread {
 		}
 	}
 
+	private void fetchHistoricalData(HelperWrapper	helperWrapper)
+	{
+		
+		IUniversalSensorManager mListener = helperWrapper.mListener;
+		Bundle mbundle = helperWrapper.mBundle;
+		String tableName = mbundle.getString("tableName");
+		int txnID = mbundle.getInt("txnID");
+		String devID = mbundle.getString("devID");
+		int sType = mbundle.getInt("sType");
+		long start = mbundle.getLong("start");
+		long end = mbundle.getLong("end");
+		long interval = mbundle.getLong("interval");
+		int function = mbundle.getInt("function");
+
+		JSONObject obj = new JSONObject();
+		
+		long newstart = start;
+		while(newstart <= end) {
+			try {
+				HashMap<String, Float> h = mDataStoreManager.compute(tableName, sType, function, newstart, newstart + interval);
+				if (h != null)
+					obj.put(""+newstart, h);
+				else
+					break;
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			newstart = newstart + interval;
+		}
+//		HashMap<String, Float> h = new HashMap<String, Float>();
+//		h.put("x", 1.0f);
+//		JSONObject obj = new JSONObject();
+//		
+//		try {
+//			obj.put("my_name_is ", "Junaid");
+//			obj.put("2134-60", h);
+//		} catch (JSONException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+
+		try {
+			mListener.historicalDataResponse(txnID, devID, sType, function, obj.toString());
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	@Override
 	public void run() {
 		Looper.prepare();
@@ -63,6 +121,8 @@ public class UniversalDataStore extends Thread {
 				case UniversalConstants.MSG_ListHistoricalDevices:
 					listHistoricalDevices((IUniversalSensorManager)msg.obj);
 					break;
+				case UniversalConstants.MSG_FETCH_HISTORICAL_DATA:
+					fetchHistoricalData(((HelperWrapper)msg.obj));
 				}
 			}
 		};

@@ -4,6 +4,8 @@ package com.ucla.nesl.app;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -103,7 +105,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             					", bundleSize supported: " + device.getBundleSizeList(i));
             	}
             	registerNotification();
-            	mManager.listHistoricalDevice();
             }
         });
         
@@ -187,6 +188,8 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     void registerNotification()
     {
     	mManager.registerNotification(this);
+    	long start = 5865455829L;
+    	mManager.fetchHistoricalData(1, "phoneSensor1", 1, start, start+1, 1, 1);
     }
     
     private void registerListener(String devID, int sType, int rate, int bundleSize)
@@ -247,5 +250,15 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	@Override
 	public void listHistoricalDevices(Map<String, ArrayList<Integer>> deviceList) {
 		Log.i(tag, "listHistoricalDevices: " + deviceList);
+	}
+
+	@Override
+	public void historicalDataResponse(int txnID, String devID, int sType,
+			int function, JSONObject result) {
+		Log.i(tag, "historicalDataResponse " + result);
+	}
+
+	@Override
+	public void disconnected() {
 	}
 }

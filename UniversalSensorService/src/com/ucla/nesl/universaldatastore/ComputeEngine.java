@@ -55,7 +55,7 @@ public class ComputeEngine {
 	
 			cursor.moveToFirst();
 			for (int i = 0; i < valueLenght; i++) {
-				result.put("value" + i, cursor.getFloat(i));
+				result.put("avg.value" + i, cursor.getFloat(i));
 				Log.d(tag, "" + cursor.getColumnName(i) + ": " + cursor.getFloat(i));
 			}
 		} catch (SQLiteException e) {

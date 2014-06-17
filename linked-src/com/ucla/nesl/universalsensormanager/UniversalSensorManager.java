@@ -3,6 +3,9 @@ package com.ucla.nesl.universalsensormanager;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
@@ -85,6 +88,22 @@ public class UniversalSensorManager {
 		return remoteConnection.listHistoricalDevices(mstub);
 	}
 
+	public void fetchHistoricalData(int txnID, String devID, int sType,
+			long start, long end, long interval, int function)
+	{
+		remoteConnection.fetchHistoricalData(mstub, txnID, devID, sType, start, end, interval, function);
+	}
+	
+	public void disconnected()
+	{
+		mstub.mlistener.disconnected();
+	}
+
+	public boolean isConnected()
+	{
+		return remoteConnection.isConnected();
+	}
+
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
 		UniversalSensorManager mManager = null;
@@ -144,6 +163,17 @@ public class UniversalSensorManager {
 				}
 			}
 			mlistener.listHistoricalDevices(deviceList);
+		}
+
+		@Override
+		public void historicalDataResponse(int txnID, String devID, int sType,
+				int function, String dataStream) {
+			try {
+				mlistener.historicalDataResponse(txnID, devID, sType, function, new JSONObject(dataStream));
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 }
