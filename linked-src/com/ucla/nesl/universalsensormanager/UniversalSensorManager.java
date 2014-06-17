@@ -93,7 +93,7 @@ public class UniversalSensorManager {
 	{
 		remoteConnection.fetchHistoricalData(mstub, txnID, devID, sType, start, end, interval, function);
 	}
-	
+
 	public void disconnected()
 	{
 		mstub.mlistener.disconnected();

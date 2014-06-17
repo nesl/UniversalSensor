@@ -68,7 +68,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 		}
 		return false;
 	}
-	
+
 	public boolean isConnected()
 	{
 		return service == null ? false : true;

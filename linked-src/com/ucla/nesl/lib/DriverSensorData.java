@@ -6,7 +6,7 @@ public class DriverSensorData {
 
 	public DriverSensorData(String devID, int sType, int arraySize) {
 		event  = new UniversalSensorEvent[arraySize];
-		
+
 		for (int i = 0; i < arraySize; i++) {
 			event[i] = new UniversalSensorEvent(devID, sType);
 		}
@@ -26,7 +26,7 @@ public class DriverSensorData {
 	{
 		return event;
 	}
-	
+
 	public int getIndex()
 	{
 		return index;

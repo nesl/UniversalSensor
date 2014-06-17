@@ -26,124 +26,124 @@ import com.ucla.nesl.lib.UniversalSensorNameMap;
 import com.ucla.nesl.universalsensormanager.UniversalSensorManager;
 
 public class UniversalSensorApp extends Activity implements UniversalEventListener {
-    private Button listDevices;
-    private Button register;
-    private Button unregister;
-    private Button registerDriver;
-    private Button unregisterDriver;
-    private Button startZephyr;
-    private Button startTestDriver;
-    private EditText edittext;
-    private String tag = UniversalSensorApp.class.getCanonicalName();
-    private UniversalSensorManager mManager;    
+	private Button listDevices;
+	private Button register;
+	private Button unregister;
+	private Button registerDriver;
+	private Button unregisterDriver;
+	private Button startZephyr;
+	private Button startTestDriver;
+	private EditText edittext;
+	private String tag = UniversalSensorApp.class.getCanonicalName();
+	private UniversalSensorManager mManager;    
 	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
 	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
 	private ArrayList<Device> dlist;
 	Device device;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        listDevices = (Button)findViewById(R.id.listDevices);
-        register = (Button)findViewById(R.id.register);
-        unregister = (Button)findViewById(R.id.unregister);
-        registerDriver = (Button)findViewById(R.id.registerDriver);
-        unregisterDriver = (Button)findViewById(R.id.unregisterDriver);
-        edittext = (EditText)findViewById(R.id.edittext);
-        startZephyr = (Button)findViewById(R.id.startZephyr);
-        startTestDriver = (Button)findViewById(R.id.startTestDriver);
-        mManager = UniversalSensorManager.create(getApplicationContext(), this);
-        PowerManager.WakeLock mWakeLock;
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+		listDevices = (Button)findViewById(R.id.listDevices);
+		register = (Button)findViewById(R.id.register);
+		unregister = (Button)findViewById(R.id.unregister);
+		registerDriver = (Button)findViewById(R.id.registerDriver);
+		unregisterDriver = (Button)findViewById(R.id.unregisterDriver);
+		edittext = (EditText)findViewById(R.id.edittext);
+		startZephyr = (Button)findViewById(R.id.startZephyr);
+		startTestDriver = (Button)findViewById(R.id.startTestDriver);
+		mManager = UniversalSensorManager.create(getApplicationContext(), this);
+		PowerManager.WakeLock mWakeLock;
+		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
 		mWakeLock.setReferenceCounted(false);
 		mWakeLock.acquire();
-        register.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	String value  = edittext.getText().toString();
-            	if (value.isEmpty()) {
-            		Log.i(tag, "Please enter the device number and sensor type");
-            		return;
-            	}
+		register.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				String value  = edittext.getText().toString();
+				if (value.isEmpty()) {
+					Log.i(tag, "Please enter the device number and sensor type");
+					return;
+				}
 
-            	dlist = mManager.listDevices();
-            	if (dlist == null) {
-            		Log.e(tag, "list returned null");
-            		return;
-            	}
-            	int devNum = Integer.valueOf(value.split(":")[0]);
-            	int sType = Integer.valueOf(value.split(":")[1]);
-            	int rate = Integer.valueOf(value.split(":")[2]);
-            	int bundleSize = Integer.valueOf(value.split(":")[3]);
+				dlist = mManager.listDevices();
+				if (dlist == null) {
+					Log.e(tag, "list returned null");
+					return;
+				}
+				int devNum = Integer.valueOf(value.split(":")[0]);
+				int sType = Integer.valueOf(value.split(":")[1]);
+				int rate = Integer.valueOf(value.split(":")[2]);
+				int bundleSize = Integer.valueOf(value.split(":")[3]);
 
-            	device = dlist.get(devNum);
-            	Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + ", " + bundleSize);
+				device = dlist.get(devNum);
+				Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + ", " + bundleSize);
 
-                registerListener(device.getDevID(), sType, rate, bundleSize);
-            }
-        });
+				registerListener(device.getDevID(), sType, rate, bundleSize);
+			}
+		});
 
-        listDevices.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	dlist = mManager.listDevices();
-            	if (dlist == null) {
-            		Log.i(tag, "no elements");
-            		return;
-            	}
-            	Log.i(tag, "listing devices " + dlist.size());
+		listDevices.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				dlist = mManager.listDevices();
+				if (dlist == null) {
+					Log.i(tag, "no elements");
+					return;
+				}
+				Log.i(tag, "listing devices " + dlist.size());
 
-            	for (Device device:mManager.listDevices())
-            	{
-            		Log.i(tag, device.getDevID());
+				for (Device device:mManager.listDevices())
+				{
+					Log.i(tag, device.getDevID());
 
 
-            		for (Integer i : device.getSensorList())
-            			Log.i(tag, UniversalSensorNameMap.getName(i) + ", rate" + device.getRateList(i) + 
-            					", bundleSize supported: " + device.getBundleSizeList(i));
-            	}
-            	registerNotification();
-            }
-        });
-        
-        unregister.setOnClickListener(new OnClickListener() {
-			
+					for (Integer i : device.getSensorList())
+						Log.i(tag, UniversalSensorNameMap.getName(i) + ", rate" + device.getRateList(i) + 
+								", bundleSize supported: " + device.getBundleSizeList(i));
+				}
+				registerNotification();
+			}
+		});
+
+		unregister.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View arg0) {
-            	String value  = edittext.getText().toString();
-            	if (value.isEmpty()) {
-            		Log.i(tag, "Please enter the device number and sensor type");
-            		return;
-            	}
-            	dlist = mManager.listDevices();
-            	int devNum = Integer.valueOf(value.split(":")[0]);
-            	int sType = Integer.valueOf(value.split(":")[1]);
-            	device = dlist.get(devNum);
+				String value  = edittext.getText().toString();
+				if (value.isEmpty()) {
+					Log.i(tag, "Please enter the device number and sensor type");
+					return;
+				}
+				dlist = mManager.listDevices();
+				int devNum = Integer.valueOf(value.split(":")[0]);
+				int sType = Integer.valueOf(value.split(":")[1]);
+				device = dlist.get(devNum);
 				unregisterListener(device.getDevID(), sType);
 			}
 		});
 
-        registerDriver.setOnClickListener(new OnClickListener() {
-			
+		registerDriver.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View arg0) {
-        		Intent intent = new Intent("bindUniversalDriverService");
-        		intent.setClassName(UNIVERSALDriverPackage, UNIVERSALDriverClass);
-        		startService(intent);
+				Intent intent = new Intent("bindUniversalDriverService");
+				intent.setClassName(UNIVERSALDriverPackage, UNIVERSALDriverClass);
+				startService(intent);
 			}
 		});
 
-	    unregisterDriver.setOnClickListener(new OnClickListener() {
+		unregisterDriver.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				
+
 			}
-	    });
-	    startZephyr.setOnClickListener(new OnClickListener() {
+		});
+		startZephyr.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
 				String bluetoothAddr = edittext.getText().toString();
@@ -154,13 +154,13 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 				}
 				Intent intent = new Intent("ScanDevice");
 				intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-//				intent.setAction("ZephyrDriverBroadcastReceiver");
+				//				intent.setAction("ZephyrDriverBroadcastReceiver");
 				startService(intent);
 			}
 		});
 
-	    startTestDriver.setOnClickListener(new OnClickListener() {
-			
+		startTestDriver.setOnClickListener(new OnClickListener() {
+
 			@Override
 			public void onClick(View arg0) {
 				String value = edittext.getText().toString();
@@ -170,41 +170,41 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 					return;
 				}
 				int cmd = Integer.valueOf(value.split(":")[0]);
-            	int name = Integer.valueOf(value.split(":")[1]);
-            	int rate = Integer.valueOf(value.split(":")[2]);
-            	int bundleSize = Integer.valueOf(value.split(":")[3]);
+				int name = Integer.valueOf(value.split(":")[1]);
+				int rate = Integer.valueOf(value.split(":")[2]);
+				int bundleSize = Integer.valueOf(value.split(":")[3]);
 				Intent intent = new Intent("TestDriverBroadcastReceiver");
 				intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
 				intent.putExtra("cmd", cmd);
 				intent.putExtra("name", name);
 				intent.putExtra("rate", rate);
 				intent.putExtra("bundleSize", bundleSize);
-//				intent.setAction("ZephyrDriverBroadcastReceiver");
+				//				intent.setAction("ZephyrDriverBroadcastReceiver");
 				startService(intent);
 			}
 		});
 	}
 
-    void registerNotification()
-    {
-    	mManager.registerNotification(this);
-    	long start = 5865455829L;
-    	mManager.fetchHistoricalData(1, "phoneSensor1", 1, start, start+1, 1, 1);
-    }
-    
-    private void registerListener(String devID, int sType, int rate, int bundleSize)
-    {
-    	currentTime = System.currentTimeMillis();
-    	oldTime  = 0;
-    	val = 0;
-    	mManager.registerListener(devID, sType, false, rate, bundleSize);
-    }
-    
-    private void unregisterListener(String devID, int sType)
-    {
-    	mManager.unregisterListener(devID, sType);
-    }
-    
+	void registerNotification()
+	{
+		mManager.registerNotification(this);
+		long start = 5865455829L;
+		mManager.fetchHistoricalData(1, "phoneSensor1", 1, start, start+1, 1, 1);
+	}
+
+	private void registerListener(String devID, int sType, int rate, int bundleSize)
+	{
+		currentTime = System.currentTimeMillis();
+		oldTime  = 0;
+		val = 0;
+		mManager.registerListener(devID, sType, false, rate, bundleSize);
+	}
+
+	private void unregisterListener(String devID, int sType)
+	{
+		mManager.unregisterListener(devID, sType);
+	}
+
 	@Override
 	protected void onPause() 
 	{
@@ -213,13 +213,13 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 	@Override
 	protected void onResume() {
-	    super.onResume();
+		super.onResume();
 	}
 
 	int val;
 	long currentTime;
 	long oldTime;
-	
+
 	@Override
 	public void onSensorChanged(UniversalSensorEvent[] event) {
 		val ++;
@@ -239,7 +239,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	@Override
 	public void notifySensorChanged(String devID, int sType, int action) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

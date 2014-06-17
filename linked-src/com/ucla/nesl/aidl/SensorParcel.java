@@ -32,7 +32,7 @@ public class SensorParcel implements Parcelable {
 		valueSize  = UniversalConstants.getValuesLength(sType);
 		values     = new float[valueSize];
 	}
-	
+
 	public void setDataValues(float[] values, long timestamp)
 	{
 		this.timestamp = timestamp;
@@ -94,7 +94,7 @@ public class SensorParcel implements Parcelable {
 	}
 
 	public static final Parcelable.Creator<SensorParcel> CREATOR = new Creator<SensorParcel>()
-	{
+			{
 		public SensorParcel createFromParcel(Parcel src)
 		{
 			SensorParcel sp = new SensorParcel();
@@ -112,6 +112,6 @@ public class SensorParcel implements Parcelable {
 		{
 			return new SensorParcel[size];
 		}
-	};
+			};
 
 }

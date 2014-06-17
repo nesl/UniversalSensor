@@ -32,14 +32,14 @@ public interface UniversalEventListener {
 	 * @param accuracy The new accuracy of this sensor
 	 */                                                                                  
 	public void onAccuracyChanged(UniversalSensor sensor, int accuracy);
-	
+
 	public void notifySensorChanged(String devID, int sType, int action);
-	
+
 	void notifyNewDevice(Device mdevice);
-	
+
 	void listHistoricalDevices(Map<String, ArrayList<Integer>> deviceList);
-	
+
 	void historicalDataResponse(int txnID, String devID, int sType, int cmd, JSONObject result);
-	
+
 	void disconnected();
 }

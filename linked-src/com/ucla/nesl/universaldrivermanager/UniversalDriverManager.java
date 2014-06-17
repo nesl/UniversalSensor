@@ -20,7 +20,7 @@ public class UniversalDriverManager {
 	private String devID  = null;
 	private UniversalDriverManagerStub mDriverManagerStub;
 	boolean once = true;
-	
+
 	public static UniversalDriverManager create(Context context, UniversalDriverListener mlistener, String devID)
 	{
 		return new UniversalDriverManager(context, mlistener, devID);
@@ -79,8 +79,8 @@ public class UniversalDriverManager {
 	{
 		Log.i(tag, "unregistering the device " + devID);
 
-			device.removeSensor(sType);
-			remoteConnection.unregisterDriver(device.getDevID(), sType);
+		device.removeSensor(sType);
+		remoteConnection.unregisterDriver(device.getDevID(), sType);
 		return true;
 	}
 

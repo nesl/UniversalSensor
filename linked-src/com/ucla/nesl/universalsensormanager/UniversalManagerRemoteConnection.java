@@ -40,7 +40,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 	{
 		return service == null ? false : true;
 	}
-	
+
 	public ArrayList<Device> listDevices() throws RemoteException
 	{
 		// A better approach will be that we store the request and on connect
@@ -78,14 +78,14 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			Log.d(tag, "Service is not connected, failing unregisterListener");
 			return false;
 		}
-		
+
 		try {
 			service.unregisterListener(devID, sType);
 		}catch(RemoteException e){
 			Log.e(tag, "unregisterListener");
 			e.printStackTrace();
 		}
-		
+
 		return true;
 	}
 
@@ -96,7 +96,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			Log.d(tag, "Service is not connected, failing registerNotification");
 			return false;
 		}
-		
+
 		try {
 			service.registerNotification(cb);
 		} catch (RemoteException e) {
@@ -105,7 +105,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		}
 		return true;
 	}
-	
+
 	public boolean listHistoricalDevices(UniversalSensorManagerStub cb)
 	{
 		if (service == null) {
@@ -113,7 +113,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			Log.d(tag, "Service is not connected, failing registerNotification");
 			return false;
 		}
-		
+
 		try {
 			return service.listHistoricalDevices(cb);
 		} catch (RemoteException e) {
@@ -122,7 +122,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		}
 		return true;
 	}
-	
+
 	public boolean fetchHistoricalData(UniversalSensorManagerStub cb, int txnID, String devID,
 			int sType, long start, long end, long interval, int cmd)
 	{
@@ -131,7 +131,7 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 			Log.d(tag, "Service is not connected, failing registerNotification");
 			return false;
 		}
-		
+
 		try {
 			return service.fetchHistoricalData(cb, txnID, devID, sType, start, end, interval, cmd);
 		} catch (RemoteException e) {

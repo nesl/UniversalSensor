@@ -57,7 +57,7 @@ public class UniversalDataStore extends Thread {
 
 	private void fetchHistoricalData(HelperWrapper	helperWrapper)
 	{
-		
+
 		IUniversalSensorManager mListener = helperWrapper.mListener;
 		Bundle mbundle = helperWrapper.mBundle;
 		String tableName = mbundle.getString("tableName");
@@ -70,7 +70,7 @@ public class UniversalDataStore extends Thread {
 		int function = mbundle.getInt("function");
 
 		JSONObject obj = new JSONObject();
-		
+
 		long newstart = start;
 		while(newstart <= end) {
 			try {
@@ -79,24 +79,24 @@ public class UniversalDataStore extends Thread {
 					obj.put(""+newstart, h);
 				else
 					break;
-				
+
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			newstart = newstart + interval;
 		}
-//		HashMap<String, Float> h = new HashMap<String, Float>();
-//		h.put("x", 1.0f);
-//		JSONObject obj = new JSONObject();
-//		
-//		try {
-//			obj.put("my_name_is ", "Junaid");
-//			obj.put("2134-60", h);
-//		} catch (JSONException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		//		HashMap<String, Float> h = new HashMap<String, Float>();
+		//		h.put("x", 1.0f);
+		//		JSONObject obj = new JSONObject();
+		//		
+		//		try {
+		//			obj.put("my_name_is ", "Junaid");
+		//			obj.put("2134-60", h);
+		//		} catch (JSONException e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//		}
 
 		try {
 			mListener.historicalDataResponse(txnID, devID, sType, function, obj.toString());

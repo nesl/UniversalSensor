@@ -130,7 +130,7 @@ public class UniversalServiceListener extends Thread {
 		return mlistener;
 	}
 
-	
+
 	public void unregister()
 	{
 		HashMap<String, _Sensor> _mSensorMap = null;
@@ -138,7 +138,7 @@ public class UniversalServiceListener extends Thread {
 			_mSensorMap = sensorMap;
 			sensorMap   = new HashMap<String, _Sensor>();
 		}
-		
+
 		for (Map.Entry<String, _Sensor> entry : _mSensorMap.entrySet()) {
 			entry.getValue().getRegisteredSensor().unlinkListner(getID());
 		}
@@ -176,7 +176,7 @@ public class UniversalServiceListener extends Thread {
 	{
 		return mService.generateListenerKey(callingPid);
 	}
-	
+
 	private void notifyNewDevice(Device mdevice)
 	{
 		try {
@@ -342,14 +342,14 @@ public class UniversalServiceListener extends Thread {
 		{
 			if (periodic == false)
 				return null;
-			
+
 			SensorParcel[] eventBundle = new SensorParcel[lbundleSize];
 			for (int i = 0; i < lbundleSize && eventQueue.size() > 0; i++) {
 				eventBundle[i] = eventQueue.remove(0);
 			}
 			return eventBundle;
 		}
-		
+
 
 		synchronized public void onSensorChanged(SensorParcel[] sp, int length)
 		{

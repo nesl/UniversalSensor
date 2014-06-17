@@ -11,11 +11,11 @@ import com.ucla.nesl.lib.UniversalConstants;
 
 public class ComputeEngine {
 	private static String tag = ComputeEngine.class.getCanonicalName();
-	
+
 	private String constructAVGQuery(String tableName, int sType, long start, long end)
 	{
 		StringBuilder Query = new StringBuilder();
-		
+
 		Query.append("SELECT ");
 
 		switch (UniversalConstants.getValuesLength(sType)) {
@@ -32,14 +32,14 @@ public class ComputeEngine {
 			Query.append("AVG(value0) ");
 			break;
 		}
-		
+
 		Query.append("FROM ");
 		Query.append(tableName);
 		Query.append(" WHERE timestamp >= ");
 		Query.append(start);
 		Query.append(" and timestamp <= ");
 		Query.append(end);
-		
+
 		return Query.toString();
 	}
 
@@ -52,7 +52,7 @@ public class ComputeEngine {
 		try {
 			cursor = db.rawQuery(constructAVGQuery(tableName, sType, start, end), null);
 			Log.i(tag, "number of columns " + cursor.getColumnCount());
-	
+
 			cursor.moveToFirst();
 			for (int i = 0; i < valueLenght; i++) {
 				result.put("avg.value" + i, cursor.getFloat(i));

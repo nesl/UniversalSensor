@@ -25,7 +25,7 @@ public class UniversalConstants {
 
 	public static final int COMPUTE_AVG = 1;
 	public static final int COMPUTE_MIN_MAX = 2;
-	
+
 	public static int getValuesLength(int sType)
 	{
 		switch(sType) {

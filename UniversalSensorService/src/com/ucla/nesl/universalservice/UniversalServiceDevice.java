@@ -14,7 +14,7 @@ public class UniversalServiceDevice extends Device {
 	public IUniversalDriverManager mDriverStub;
 
 	private UniversalManagerService mService;
-	
+
 	// This arraylist object maintains the list of all the sensors registered
 	// by this device. So, two things can be done on sensor count zero
 	// a) remove the device from the listing
@@ -81,7 +81,7 @@ public class UniversalServiceDevice extends Device {
 	{
 		return mService.getHandler();
 	}
-	
+
 	public boolean unregisterSensor(int sType, String mSensorKey)
 	{
 		boolean flag = true;

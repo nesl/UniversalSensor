@@ -33,9 +33,9 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	Map<String, UniversalServiceDevice> registeredDevices = new HashMap<String, UniversalServiceDevice>();
 	HashMap<String, UniversalServiceListener> registeredListeners = new HashMap<String, UniversalServiceListener>();
 
-	
+
 	private Runnable cleanupRunnable = new Runnable() {
-		
+
 		@Override
 		public void run() {
 			Looper.prepare();
@@ -55,17 +55,17 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			Looper.loop();
 		}
 	};
-	
+
 	public Handler getHandler()
 	{
 		return mHandler;
 	}
-	
+
 	public UniversalManagerService(UniversalService parent) {
 		this.parent   = parent;
 		cleanupThread = new Thread(cleanupRunnable);
 		cleanupThread.start();
-		
+
 		// Create the DataStore thread
 		mUniversalDataStore = new UniversalDataStore(parent.getApplicationContext());
 		mUniversalDataStore.start();
@@ -406,20 +406,20 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			return null;
 		}
 		mlistener = getRegisteredListener(mListenerKey);
-		
+
 		return mlistener.pushData(mSensorKey);
 	}
-	
+
 	public boolean unregisterListenerAll(String listenerKey)
 	{
 		UniversalServiceListener mlistener;
-		
+
 		mlistener = getRegisteredListener(listenerKey);
-		
+
 		mlistener.unregister();
 		return true;
 	}
-	
+
 	//		@Override
 	//		public void onSensorChanged(SensorParcel event) throws RemoteException {
 	//			String key = generateSensorKey(event.devID, event.sType);
@@ -505,8 +505,8 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			Log.i(tag, "registerListener::handler is null");
 			return false;
 		}
-		
-		
+
+
 		mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_FETCH_HISTORICAL_DATA, new HelperWrapper(mListener, mBundle)));
 		return false;
 	}

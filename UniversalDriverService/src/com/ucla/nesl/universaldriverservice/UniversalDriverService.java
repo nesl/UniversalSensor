@@ -35,37 +35,37 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	int count = 0;
 
 	@Override
-    public void onCreate() {
-        super.onCreate();
-        Log.i(tag, "onCreate called driver");
-        
-        sensorRate.put(UniversalSensor.TYPE_ACCELEROMETER, new int[]{200, 50,15, 50});
-        sensorRate.put(UniversalSensor.TYPE_GYROSCOPE, new int[]{50, 5, 5, 15});
-        sensorRate.put(UniversalSensor.TYPE_MAGNETIC_FIELD, new int[]{200, 50, 5, 15});
-        bundleSize = new int[]{1};
-        
-        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+	public void onCreate() {
+		super.onCreate();
+		Log.i(tag, "onCreate called driver");
 
-        // This is the driver.
-        mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), this, devID);
-        if (mdriverManager1 == null) {
-        	Log.e(tag, "mdrivermanager is null, this is not possible");
-        } else {
-        	Log.i(tag, "drivermanager is not null");
-        }
+		sensorRate.put(UniversalSensor.TYPE_ACCELEROMETER, new int[]{200, 50,15, 50});
+		sensorRate.put(UniversalSensor.TYPE_GYROSCOPE, new int[]{50, 5, 5, 15});
+		sensorRate.put(UniversalSensor.TYPE_MAGNETIC_FIELD, new int[]{200, 50, 5, 15});
+		bundleSize = new int[]{1};
 
-        handler = new Handler();
-        handler.postDelayed(r, 1000);
-    }
+		mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+		// This is the driver.
+		mdriverManager1 = UniversalDriverManager.create(getApplicationContext(), this, devID);
+		if (mdriverManager1 == null) {
+			Log.e(tag, "mdrivermanager is null, this is not possible");
+		} else {
+			Log.i(tag, "drivermanager is not null");
+		}
+
+		handler = new Handler();
+		handler.postDelayed(r, 1000);
+	}
 
 	void register()
 	{
 		// Exposing accelerometer for now. You can expose all the sensors.
 		// Only the exposed sensors will be visible to the applications
 
-        mdriverManager1.registerDriver(UniversalSensor.TYPE_ACCELEROMETER, sensorRate.get(UniversalSensor.TYPE_ACCELEROMETER), bundleSize);
-        mdriverManager1.registerDriver(UniversalSensor.TYPE_GYROSCOPE, sensorRate.get(UniversalSensor.TYPE_GYROSCOPE), bundleSize);
-        mdriverManager1.registerDriver(UniversalSensor.TYPE_MAGNETIC_FIELD, sensorRate.get(UniversalSensor.TYPE_MAGNETIC_FIELD), bundleSize);
+		mdriverManager1.registerDriver(UniversalSensor.TYPE_ACCELEROMETER, sensorRate.get(UniversalSensor.TYPE_ACCELEROMETER), bundleSize);
+		mdriverManager1.registerDriver(UniversalSensor.TYPE_GYROSCOPE, sensorRate.get(UniversalSensor.TYPE_GYROSCOPE), bundleSize);
+		mdriverManager1.registerDriver(UniversalSensor.TYPE_MAGNETIC_FIELD, sensorRate.get(UniversalSensor.TYPE_MAGNETIC_FIELD), bundleSize);
 	}
 
 	void unregister()
@@ -76,7 +76,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		rate = 0;
 	}
 
-    private Runnable r = new Runnable() {
+	private Runnable r = new Runnable() {
 		@Override
 		public void run() {
 			Log.i(tag, "registering");
@@ -84,12 +84,12 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		}
 	};
 
-    private Runnable r1 = new Runnable() {
+	private Runnable r1 = new Runnable() {
 		@Override
 		public void run() {
 
-				Log.i(tag, "unregistering");
-				unregister();
+			Log.i(tag, "unregistering");
+			unregister();
 		}
 	};
 
@@ -131,19 +131,19 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		Log.i(tag, "setRate:: sType: " + sType + ", rate: " + rate + ", bundleSize: " + bundleSize);
 		if (rate == 0) {
 			this.rate = 0;
-	        mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sType));
-	        Log.i(tag, "setRate unregister  " + sType + " rate " + rate);
+			mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sType));
+			Log.i(tag, "setRate unregister  " + sType + " rate " + rate);
 		} else {
 			int delay_type = getDelayType(sType, rate);
 			mSensorManager.unregisterListener(this, mSensorManager.getDefaultSensor(sType));
-	        mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(sType), delay_type);
-	        Log.i(tag, "setRate " + sType + " rate " + rate + " delaytype " + delay_type);
+			mSensorManager.registerListener(this, mSensorManager.getDefaultSensor(sType), delay_type);
+			Log.i(tag, "setRate " + sType + " rate " + rate + " delaytype " + delay_type);
 		}
 	}
 
 	@Override
 	public void disconnected() {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
