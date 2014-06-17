@@ -1,6 +1,7 @@
 package com.ucla.nesl.universalsensormanager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,21 +23,21 @@ public class UniversalSensorManager {
 	private Context context;
 	private static String tag = UniversalSensorManager.class.getCanonicalName();
 
-	public static UniversalSensorManager create(Context context) {
+	public static UniversalSensorManager create(Context context, UniversalEventListener mlistener) {
 		if (mManager != null) {
 			Log.d(tag, "UniversalSensorManager object already exists. Returning the same.");
 			return mManager;
 		}
 		Log.d(tag, "Creating a new UniversalSensorManager object");
-		mManager = new UniversalSensorManager(context);
+		mManager = new UniversalSensorManager(context, mlistener);
 		return mManager;
 	}
 
-	private UniversalSensorManager(Context context) {
+	private UniversalSensorManager(Context context, UniversalEventListener mlistener) {
 		this.context = context;
 		Log.d(tag, "Instantiating binder connection with UniversalService");
 		remoteConnection = new UniversalManagerRemoteConnection(this);
-		mstub = new UniversalSensorManagerStub(this);
+		mstub = new UniversalSensorManagerStub(this, mlistener);
 		connectRemote();
 	}
 
@@ -50,18 +51,17 @@ public class UniversalSensorManager {
 		}
 	}
 
-	public boolean registerListener(UniversalEventListener mlistener, 
-			String devID, int sType, boolean periodic, int rateUs, int bundleSize) {
+	public boolean registerListener(String devID, int sType, boolean periodic, int rateUs, int bundleSize) {
 		if (mstub == null) {
 			Log.i(tag, "mstub is null " + devID);
 			return false;
 		}
-		mstub.registerListener(mlistener);
+
 		remoteConnection.registerListener(mstub, devID, sType, periodic, rateUs, bundleSize);
 		return true;
 	}
 
-	public boolean unregisterListener(UniversalEventListener mlistener, String devID, int sType)
+	public boolean unregisterListener(String devID, int sType)
 	{
 		remoteConnection.unregisterListener(devID, sType);
 		return true;
@@ -80,13 +80,19 @@ public class UniversalSensorManager {
 		remoteConnection.registerNotification(mstub);
 	}
 
+	public boolean listHistoricalDevice()
+	{
+		return remoteConnection.listHistoricalDevices(mstub);
+	}
+
 	class UniversalSensorManagerStub extends IUniversalSensorManager.Stub {
 		UniversalEventListener mlistener = null;
 		UniversalSensorManager mManager = null;
 		int i = 0;
-		UniversalSensorManagerStub(UniversalSensorManager mManager)
+		UniversalSensorManagerStub(UniversalSensorManager mManager, UniversalEventListener mlistener)
 		{
 			this.mManager = mManager;
+			this.mlistener = mlistener;
 		}
 
 		public void registerListener(UniversalEventListener mlistener)
@@ -110,6 +116,34 @@ public class UniversalSensorManager {
 		@Override
 		public void notifySensorChanged(String devID, int sType, int action) {
 			mlistener.notifySensorChanged(devID, sType, action);
+		}
+
+		@Override
+		public void listHistoricalDevice(String[] devices)
+				throws RemoteException {
+			if (devices == null) {
+				Log.d(tag, "listHistoricalDevice: remote service returned null");
+				mlistener.listHistoricalDevices(null);
+			}
+			Log.d(tag, "listHistoricalDevice: returned " + devices.length + " number of sensors");
+
+			HashMap<String, ArrayList<Integer>> deviceList = new HashMap<String, ArrayList<Integer>>();
+			for (String mSensor : devices) {
+				String[] mdev;
+				try {
+					mdev = mSensor.split("_");
+
+					ArrayList<Integer> sensorList = deviceList.get(mdev[0]);
+					if (sensorList == null) {
+						sensorList = new ArrayList<Integer>();
+						deviceList.put(mdev[0], sensorList);
+					}
+					sensorList.add(Integer.valueOf(mdev[1]));
+				} catch (Exception e) {
+					continue;
+				}
+			}
+			mlistener.listHistoricalDevices(deviceList);
 		}
 	}
 }

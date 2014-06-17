@@ -110,14 +110,40 @@ public class DataStoreManager extends SQLiteOpenHelper {
 		} finally {
 			db.close();
 		}
-		if (once == true) {
-			once = false;
-			db = this.getReadableDatabase();
-			mComputeEngine.avg(db, "phoneSensor1_3", 1, 5865455752l, 5865455754l);
-		}
+//		if (once == true) {
+//			once = false;
+//			db = this.getReadableDatabase();
+//			mComputeEngine.avg(db, "phoneSensor1_3", 1, 5865455752l, 5865455754l);
+//			print_tables(db);
+//			db.close();
+//		}
 		return true;
 	}
 	
+	public String[] retrieve_all_tables()
+	{
+		int i = 0;
+		String[] tableNames;
+		Cursor c;
+		SQLiteDatabase db;
+		
+		db = this.getReadableDatabase();
+		c = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table'", null);
+
+		Log.d(tag, "retrieve_all_tables:: number of tables: " + c.getCount());
+		tableNames = new String[c.getCount() - 1]; // Skip the metadata table
+
+		c.moveToFirst();
+		c.moveToNext(); // Skip the metadata table
+		while (c.isAfterLast() == false) {
+			Log.i(tag, "" + c.getString(c.getColumnIndex("name")));
+			tableNames[i++] = new String(c.getString(c.getColumnIndex("name")));
+			c.moveToNext();
+		}
+		db.close();
+		return tableNames;
+	}
+
 	public HashMap<String, Float> compute(String tableName, int sType, int function, long start, long end)
 	{
 		SQLiteDatabase db = null;

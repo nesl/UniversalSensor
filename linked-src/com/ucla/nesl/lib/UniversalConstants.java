@@ -14,6 +14,7 @@ public class UniversalConstants {
 	public static final int MSG_PUSH_DATA = 8;
 	public static final int MSG_FETCH_RECORD = 9;
 	public static final int MSG_STORE_RECORD = 10;
+	public static final int MSG_ListHistoricalDevices = 11;
 
 	public static final String rate = "rate";
 	public static final String bundleSize = "bundleSize";

@@ -15,5 +15,7 @@ interface IUniversalManagerService {
 	boolean unregisterDriver(String devID, int sType);
 	void registerNotification(IUniversalSensorManager mManager);
 	oneway void onSensorChanged(in SensorParcel[] event, int length);
+	boolean listHistoricalDevices(IUniversalSensorManager mListenerStub);
+	boolean fetchHistoricalData(IUniversalSensorManager mManager, int txnID, String devID, int sType, long start, long end, long interval, int cmd); 
 	String getDevID();
 }

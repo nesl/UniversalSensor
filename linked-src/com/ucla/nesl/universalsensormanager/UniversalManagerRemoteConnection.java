@@ -99,4 +99,21 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 		}
 		return true;
 	}
+	
+	public boolean listHistoricalDevices(UniversalSensorManagerStub cb)
+	{
+		if (service == null) {
+			mManager.connectRemote();
+			Log.d(tag, "Service is not connected, failing registerNotification");
+			return false;
+		}
+		
+		try {
+			return service.listHistoricalDevices(cb);
+		} catch (RemoteException e) {
+			Log.e(tag, "registerNotification");
+			e.printStackTrace();
+		}
+		return true;
+	}
 }

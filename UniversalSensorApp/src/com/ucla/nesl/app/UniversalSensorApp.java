@@ -2,6 +2,7 @@ package com.ucla.nesl.app;
 
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import android.app.Activity;
 import android.content.Context;
@@ -50,7 +51,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
         edittext = (EditText)findViewById(R.id.edittext);
         startZephyr = (Button)findViewById(R.id.startZephyr);
         startTestDriver = (Button)findViewById(R.id.startTestDriver);
-        mManager = UniversalSensorManager.create(getApplicationContext());
+        mManager = UniversalSensorManager.create(getApplicationContext(), this);
         PowerManager.WakeLock mWakeLock;
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
@@ -102,6 +103,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
             					", bundleSize supported: " + device.getBundleSizeList(i));
             	}
             	registerNotification();
+            	mManager.listHistoricalDevice();
             }
         });
         
@@ -192,12 +194,12 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
     	currentTime = System.currentTimeMillis();
     	oldTime  = 0;
     	val = 0;
-    	mManager.registerListener(this, devID, sType, false, rate, bundleSize);
+    	mManager.registerListener(devID, sType, false, rate, bundleSize);
     }
     
     private void unregisterListener(String devID, int sType)
     {
-    	mManager.unregisterListener(this, devID, sType);
+    	mManager.unregisterListener(devID, sType);
     }
     
 	@Override
@@ -240,5 +242,10 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	@Override
 	public void notifyNewDevice(Device mdevice) {
 		Log.d(tag, "new device available " + mdevice.getDevID() + ", sensorList: " + mdevice.getSensorList());
+	}
+
+	@Override
+	public void listHistoricalDevices(Map<String, ArrayList<Integer>> deviceList) {
+		Log.i(tag, "listHistoricalDevices: " + deviceList);
 	}
 }

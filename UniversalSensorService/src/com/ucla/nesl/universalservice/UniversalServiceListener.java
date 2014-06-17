@@ -125,11 +125,11 @@ public class UniversalServiceListener extends Thread {
 			mSensor.getRegisteredSensor().unlinkListner("" + callingPid);
 	}
 
-	//	public IUniversalSensorManager getListener()
-	//	{
-	//		return mlistener;
-	//	}
-	//	
+	public IUniversalSensorManager getListener()
+	{
+		return mlistener;
+	}
+
 	
 	public void unregister()
 	{

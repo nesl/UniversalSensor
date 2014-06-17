@@ -6,4 +6,6 @@ interface IUniversalSensorManager {
 	void onSensorChanged(in SensorParcel[] event);
 	void notifyNewDevice(in Device mdevice);
 	void notifySensorChanged(String devID, int sType, int action);
+	void listHistoricalDevice(in String[] devices);
+	void fetchHistoricalData(int txnID, String devID, int sType, int cmd, in String dataStream);
 }

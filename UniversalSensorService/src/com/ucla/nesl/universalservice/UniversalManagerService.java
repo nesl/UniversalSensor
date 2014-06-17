@@ -441,7 +441,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			throws RemoteException {
 		String mlistenerKey = generateListenerKey(Binder.getCallingPid());
 
-		Log.i(tag, "adding listener to notification list " + Binder.getCallingPid());
+		Log.d(tag, "adding listener to notification list " + Binder.getCallingPid());
 
 		// Add the listener to the map if it already doesn't exists
 		if (!hasRegisteredListener(mlistenerKey)) {
@@ -466,5 +466,20 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 
 		msensor.onSensorChanged(event, length);
 
+	}
+
+	@Override
+	public boolean listHistoricalDevices(IUniversalSensorManager mListenerStub) throws RemoteException {
+		String mlistenerKey = generateListenerKey(Binder.getCallingPid());
+		Log.d(tag, "adding listener to notification list " + Binder.getCallingPid());
+
+		Handler mhandler = UniversalDataStore.getHandler();
+		if (mhandler == null) {
+			Log.i(tag, "registerListener::handler is null");
+			return false;
+		}
+		mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_ListHistoricalDevices, mListenerStub));
+
+		return true;
 	}
 }

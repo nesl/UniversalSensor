@@ -1,16 +1,20 @@
 package com.ucla.nesl.universaldatastore;
 
-import com.ucla.nesl.aidl.SensorParcel;
-import com.ucla.nesl.lib.SensorParcelWrapper;
-import com.ucla.nesl.lib.UniversalConstants;
-
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteException;
+import android.util.Log;
+
+import com.ucla.nesl.aidl.IUniversalSensorManager;
+import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.SensorParcelWrapper;
+import com.ucla.nesl.lib.UniversalConstants;
 
 public class UniversalDataStore extends Thread {
 	private static Handler mHandler = null;
+	private static String tag = UniversalDataStore.class.getCanonicalName();
 	private static UniversalDataStore mUniversalDataStore = null;
 	private DataStoreManager mDataStoreManager = null;
 
@@ -33,6 +37,16 @@ public class UniversalDataStore extends Thread {
 		mDataStoreManager.insertSensorData(sp);//, length);
 	}
 
+	private void listHistoricalDevices(IUniversalSensorManager mlistener)
+	{
+		try {
+			mlistener.listHistoricalDevice(mDataStoreManager.retrieve_all_tables());
+		} catch (RemoteException e) {
+			Log.e(tag, "listHistoricalDevices");
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	public void run() {
 		Looper.prepare();
@@ -45,6 +59,9 @@ public class UniversalDataStore extends Thread {
 					break;
 				case UniversalConstants.MSG_STORE_RECORD:
 					storeRecord(((SensorParcelWrapper) msg.obj).sp, ((SensorParcelWrapper) msg.obj).length);
+					break;
+				case UniversalConstants.MSG_ListHistoricalDevices:
+					listHistoricalDevices((IUniversalSensorManager)msg.obj);
 					break;
 				}
 			}

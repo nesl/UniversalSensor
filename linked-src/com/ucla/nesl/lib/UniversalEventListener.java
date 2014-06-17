@@ -1,5 +1,8 @@
 package com.ucla.nesl.lib;
 
+import java.util.ArrayList;
+import java.util.Map;
+
 import com.ucla.nesl.aidl.Device;
 
 public interface UniversalEventListener {
@@ -31,4 +34,6 @@ public interface UniversalEventListener {
 	public void notifySensorChanged(String devID, int sType, int action);
 	
 	void notifyNewDevice(Device mdevice);
+	
+	void listHistoricalDevices(Map<String, ArrayList<Integer>> deviceList);
 }
