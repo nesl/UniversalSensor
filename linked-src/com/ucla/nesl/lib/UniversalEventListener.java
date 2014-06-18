@@ -6,6 +6,7 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.ucla.nesl.aidl.Device;
+import com.ucla.nesl.aidl.SensorParcel;
 
 public interface UniversalEventListener {
 	/**                                                                                  
@@ -23,15 +24,6 @@ public interface UniversalEventListener {
 	 * @param event the {@link android.hardware.SensorEvent SensorEvent}.                
 	 */                                                                                  
 	public void onSensorChanged(UniversalSensorEvent[] event);                                      
-
-	/**
-	 * Called when the accuracy of a sensor has changed.
-	 * <p>See {@link android.hardware.SensorManager SensorManager}                       
-	 * for details.
-	 *
-	 * @param accuracy The new accuracy of this sensor
-	 */                                                                                  
-	public void onAccuracyChanged(UniversalSensor sensor, int accuracy);
 
 	public void notifySensorChanged(String devID, int sType, int action);
 

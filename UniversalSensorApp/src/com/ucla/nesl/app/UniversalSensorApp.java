@@ -233,10 +233,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	}
 
 	@Override
-	public void onAccuracyChanged(UniversalSensor sensor, int accuracy) {
-	}
-
-	@Override
 	public void notifySensorChanged(String devID, int sType, int action) {
 		// TODO Auto-generated method stub
 

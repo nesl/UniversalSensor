@@ -1,5 +1,9 @@
 package com.ucla.nesl.lib;
 
+/**
+ * Helper class to be used by the Driver writers to
+ * perform efficient memory management.
+ */
 public class DriverSensorData {
 	UniversalSensorEvent[] event;
 	int index = 0;

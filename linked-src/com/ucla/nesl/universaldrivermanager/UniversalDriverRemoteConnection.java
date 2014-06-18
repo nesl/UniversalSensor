@@ -37,6 +37,11 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 
 	public void push(SensorParcel[] sp, int length)
 	{
+		if (service == null) {
+			parent.connectRemote();
+			return;
+		}
+
 		try {
 			// Service can be null here, so try to reconnect and fail this 
 			service.onSensorChanged(sp, length);
@@ -49,6 +54,11 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 	public boolean registerDriver(Device device, UniversalDriverManagerStub mDriverManagerStub,
 			int sType, int rate[], int bundleSize[])
 	{
+		if (service == null) {
+			parent.connectRemote();
+			return false;
+		}
+
 		try {
 			return service.registerDriver(device, mDriverManagerStub, sType, rate, bundleSize);
 		} catch (RemoteException e) {
@@ -60,6 +70,11 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 
 	public boolean unregisterDriver(String devID, int sType)
 	{
+		if (service == null) {
+			parent.connectRemote();
+			return false;
+		}
+
 		try {
 			return service.unregisterDriver(devID, sType);
 		} catch (RemoteException e) {

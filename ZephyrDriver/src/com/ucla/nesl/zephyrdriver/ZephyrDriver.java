@@ -32,9 +32,10 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 	private PowerManager.WakeLock mWakeLock;
 	private UniversalDriverManager mDriverManager;
 	private Context context;
-	
-	private int[] rate = {100};
-	private int[] bundleSize = {20};
+
+	private int[] chRate = {50}, ecRate = {250}, rpRate = {18}, stRate = {1}, zbRate = {1}, zbtRate = {1};
+	private int[] chBundleSize = {20}, ecBundleSize = {63}, rpBundleSize = {18},
+			stBundleSize = {1}, zbBundleSize = {1}, zbtBundleSize = {1};
 
 	private static final int RETRY_INTERVAL = 5000; // ms
 	private static final int LIFE_SIGN_SEND_INTERVAL = 8000; //ms
@@ -227,12 +228,7 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 				int month = receivedBytes[6];
 				int day = receivedBytes[7];
 
-				// TODO: add CRC check?
-				
-				//int numBytes = receivedBytes[2]+5;
-				//Log.d(TAG, "Received " + Integer.toString(numBytes) + " bytes: " + getHex(receivedBytes, receivedBytes[2]+5));
-
-/*				if (msgID == 0x20) {
+				if (msgID == 0x20) {
 					//sample interval: 1s
 					//Log.d(TAG, "Received General Data Packet");
 					long timestamp = parseTimestamp(receivedBytes);
@@ -245,16 +241,29 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 					boolean isWorn = (buttonWorn & 0x80) > 0;
 					//boolean isHRSignalLow =(buttonWorn & 0x20) > 0; 
 					//handleChestbandStatus(isWorn);
-					handleChestbandStatus(true);
+//					handleChestbandStatus(true);
 
+					float[] val = new float[1];
 					if (mIsSkinTemp) {
-						mAPI.pushInt(mDeviceID, SensorType.SKIN_TEMPERATURE, skinTemp, timestamp);
+						DriverSensorData mData = mSensorDataMap.get(UniversalSensor.TYPE_SKIN_TEMPERATURE);
+						mData.initializeIndex();
+						val[0] = skinTemp;
+						mData.setDataValues(val, timestamp);
+						mDriverManager.push(mData.getEventArray(), 1);
 					}
 					if (mIsBattery) {
-						mAPI.pushInt(mDeviceID, SensorType.ZEPHYR_BATTERY, battery, timestamp);
+						DriverSensorData mData = mSensorDataMap.get(UniversalSensor.TYPE_RIP);
+						mData.initializeIndex();
+						val[0] = battery;
+						mData.setDataValues(val, timestamp);
+						mDriverManager.push(mData.getEventArray(), 1);
 					}
 					if (mIsButtonWorn) {
-						mAPI.pushInt(mDeviceID, SensorType.ZEPHYR_BUTTON_WORN, buttonWorn, timestamp);
+						DriverSensorData mData = mSensorDataMap.get(UniversalSensor.TYPE_RIP);
+						mData.initializeIndex();
+						val[0] = buttonWorn;
+						mData.setDataValues(val, timestamp);
+						mDriverManager.push(mData.getEventArray(), 1);
 					}
 				} else if (msgID == 0x21) {
 					//Log.d(TAG, "Received Breathing Waveform Packet");
@@ -270,18 +279,19 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 							breathingData[j++] = ((receivedBytes[i+3]&0xFF)>>6) | ((receivedBytes[i+4]&0xFF) << 2);
 					}
 
-					//breathingData = mFakeRIPData[mFakeRIPDataIndex];
-
 					// sample interval: 56ms
 					if (mIsRIP) {
-						mAPI.pushIntArray(mDeviceID, SensorType.RIP, breathingData, breathingData.length, timestamp);
+						float[] val = new float[1];
+						long mtimeStamp = timestamp;
+						DriverSensorData mData = mSensorDataMap.get(UniversalSensor.TYPE_RIP);
+						mData.initializeIndex();
+						for (int i = 0; i < 18; i++) {
+							val[0] = breathingData[i];
+							mData.setDataValues(val, mtimeStamp);
+//							mtimeStamp += 56;
+						}
+						mDriverManager.push(mData.getEventArray(), 18);
 					}
-
-					//mFakeRIPDataIndex++;
-					//if (mFakeRIPDataIndex >= mFakeRIPData.length) {
-					//	mFakeRIPDataIndex = 0;
-					//}
-
 				} else if (msgID == 0x22) {
 					//Log.d(TAG, "Received ECG Waveform Packet");
 					long timestamp = parseTimestamp(receivedBytes);
@@ -296,18 +306,20 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 							ecgData[j++] = ((receivedBytes[i+3]&0xFF)>>6) | ((receivedBytes[i+4]&0xFF) << 2);
 					}
 
-					//String dump = "";
-					//for (int i=0; i<63; i++)
-					//	dump += Integer.toString(ecgData[i]) + ", ";
-					//Log.d(TAG, "ECG Data: " + dump);
-
 					// sample iterval: 4ms
 					if (mIsECG) {
-						mAPI.pushIntArray(mDeviceID, SensorType.ECG, ecgData, ecgData.length, timestamp);
+						float[] val = new float[1];
+						long mtimeStamp = timestamp;
+						DriverSensorData mData = mSensorDataMap.get(UniversalSensor.TYPE_ECG);
+						mData.initializeIndex();
+						for (int i = 0; i < 63; i++) {
+							val[0] = ecgData[i];
+							mData.setDataValues(val, mtimeStamp);
+//							mtimeStamp += 4;
+						}
+						mDriverManager.push(mData.getEventArray(), 63);
 					}
 				} else if (msgID == 0x25) {
-*/
-				if (msgID == 0x25) {
 					//Log.d(TAG, "Received Accelerometer Packet");
 					long timestamp = parseTimestamp(receivedBytes);
 					for (int i=12, j=0; i<87; i+=5) {
@@ -415,20 +427,25 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 		Log.i(TAG, "Zephyr Driver thread started " + bluetoothAddr);
 		devID = new String("Zephyr-" + bluetoothAddr);
 		tryToConnect();
-		mDriverManager = UniversalDriverManager.create(context, devID);
+		mDriverManager = UniversalDriverManager.create(context, this, devID);
 		try {
 			Thread.sleep(1500);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		init(UniversalSensor.TYPE_CHEST_ACCELEROMETER, max(bundleSize));
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_CHEST_ACCELEROMETER, rate, bundleSize);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ECG, rate, bundleSize);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_RIP, rate, bundleSize);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_SKIN_TEMPERATURE, rate, bundleSize);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BATTERY, rate, bundleSize);
-		mDriverManager.registerDriver(this, UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN, rate, bundleSize);
+		init(UniversalSensor.TYPE_CHEST_ACCELEROMETER, max(chBundleSize));
+		mDriverManager.registerDriver(UniversalSensor.TYPE_CHEST_ACCELEROMETER, chRate, chBundleSize);
+		init(UniversalSensor.TYPE_ECG, max(ecBundleSize));
+		mDriverManager.registerDriver(UniversalSensor.TYPE_ECG, ecRate, ecBundleSize);
+		init(UniversalSensor.TYPE_RIP, max(rpBundleSize));
+		mDriverManager.registerDriver(UniversalSensor.TYPE_RIP, rpRate, rpBundleSize);
+		init(UniversalSensor.TYPE_SKIN_TEMPERATURE, max(stBundleSize));
+		mDriverManager.registerDriver(UniversalSensor.TYPE_SKIN_TEMPERATURE, stRate, stBundleSize);
+		init(UniversalSensor.TYPE_ZEPHYR_BATTERY, max(zbBundleSize));
+		mDriverManager.registerDriver(UniversalSensor.TYPE_ZEPHYR_BATTERY, zbRate, zbBundleSize);
+		init(UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN, max(zbtBundleSize));
+		mDriverManager.registerDriver(UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN, zbtRate, zbtBundleSize);
 		attachZephyr();
 	}
 	
@@ -620,6 +637,24 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 		return (sample / 1023.0) * 32.0 - 16.0;
 	}
 
+	private void unflagAllSensor() {
+		mIsSkinTemp = false;
+		mIsBattery = false;
+		mIsButtonWorn = false;
+		mIsECG = false;
+		mIsRIP = false;
+		mIsAccelerometer = false;
+	}
+
+	private void flagAllSensor() {
+		mIsSkinTemp = true;
+		mIsBattery = true;
+		mIsButtonWorn = true;
+		mIsECG = true;
+		mIsRIP = true;
+		mIsAccelerometer = true;
+	}
+
 	private void handleStopSensor(int sensorId) {
 		switch (sensorId) {
 		case UniversalSensor.TYPE_ECG:
@@ -642,6 +677,10 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 			break;
 		case UniversalSensor.TYPE_ZEPHYR_BUTTON_WORN:
 			mIsButtonWorn = false;
+			break;
+		case UniversalSensor.TYPE_ALL:
+			unflagAllSensor();
+			sendStopAllSensorsPacket();
 			break;
 		}
 		if (isAllSensorExceptAccUnflagged()) {
@@ -694,5 +733,10 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 		} else {
 			handleStopSensor(sType);
 		}
+	}
+
+	@Override
+	public void disconnected() {
+		handleStopSensor(UniversalSensor.TYPE_ALL);
 	}
 }

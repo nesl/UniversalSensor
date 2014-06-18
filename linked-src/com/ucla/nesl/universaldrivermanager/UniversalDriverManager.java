@@ -34,7 +34,7 @@ public class UniversalDriverManager {
 		connectRemote();
 	}
 
-	private void connectRemote()
+	public void connectRemote()
 	{
 		Intent intent = new Intent("bindUniversalSensorService");
 		intent.setClassName(UNIVERSALServicePackage, UNIVERSALServiceClass);

@@ -32,6 +32,7 @@ public class UniversalConstants {
 		case UniversalSensor.TYPE_ACCELEROMETER:
 		case UniversalSensor.TYPE_CHEST_ACCELEROMETER:
 			return 3;
+		case UniversalSensor.TYPE_ECG:
 		case UniversalSensor.TYPE_LIGHT:
 			return 1;
 		default:
