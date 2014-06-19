@@ -30,12 +30,14 @@ public class UniversalDriverService extends Service implements SensorEventListen
 			SensorManager.SENSOR_DELAY_NORMAL, SensorManager.SENSOR_DELAY_UI
 	};
 	boolean registered = false;
+	long[] timeStamp = new long[1];
 	int rate = 0;
 	int bundleSize[];
 	int count = 0;
 
 	@Override
-	public void onCreate() {
+	public void onCreate()
+	{
 		super.onCreate();
 		Log.i(tag, "onCreate called driver");
 
@@ -76,7 +78,8 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		rate = 0;
 	}
 
-	private Runnable r = new Runnable() {
+	private Runnable r = new Runnable()
+	{
 		@Override
 		public void run() {
 			Log.i(tag, "registering");
@@ -84,7 +87,8 @@ public class UniversalDriverService extends Service implements SensorEventListen
 		}
 	};
 
-	private Runnable r1 = new Runnable() {
+	private Runnable r1 = new Runnable()
+	{
 		@Override
 		public void run() {
 
@@ -94,7 +98,8 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	};
 
 	@Override
-	public IBinder onBind(Intent intent) {
+	public IBinder onBind(Intent intent)
+	{
 		if (flag == false) {
 			Log.i(tag, "onBind ss");
 			flag = true;
@@ -104,16 +109,16 @@ public class UniversalDriverService extends Service implements SensorEventListen
 
 	// this is androids's SensorEventListener function
 	@Override
-	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+	public void onAccuracyChanged(Sensor sensor, int accuracy)
+	{
 	}
 
 	// this is android's SensorEventListener function
 	@Override
-	public void onSensorChanged(SensorEvent event) {
-		UniversalSensorEvent[] mUniversalSensorEvent = new UniversalSensorEvent[1];
-		mUniversalSensorEvent[0] = new UniversalSensorEvent(event.sensor.getType(), event.values, event.timestamp);
-		mUniversalSensorEvent[0].devID = devID;
-		mdriverManager1.push(mUniversalSensorEvent, 1);
+	public void onSensorChanged(SensorEvent event)
+	{
+		timeStamp[0] = event.timestamp;
+		mdriverManager1.push(devID, event.sensor.getType(), bundleSize[0], event.values, timeStamp);
 	}
 
 	int getDelayType(int sType, int rate)
@@ -127,7 +132,8 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	}
 
 	@Override
-	public void setRate(int sType, int rate, int bundleSize) {
+	public void setRate(int sType, int rate, int bundleSize)
+	{
 		Log.i(tag, "setRate:: sType: " + sType + ", rate: " + rate + ", bundleSize: " + bundleSize);
 		if (rate == 0) {
 			this.rate = 0;
@@ -142,7 +148,8 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	}
 
 	@Override
-	public void disconnected() {
+	public void disconnected()
+	{
 		setRate(Sensor.TYPE_ALL, 0, 0);
 	}
 }

@@ -35,7 +35,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 		parent.disconnected();
 	}
 
-	public void push(SensorParcel[] sp, int length)
+	public void push(String devID, int sType, int length, float[] data, long[] timestamp)
 	{
 		if (service == null) {
 			parent.connectRemote();
@@ -44,10 +44,11 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 
 		try {
 			// Service can be null here, so try to reconnect and fail this 
-			service.onSensorChanged(sp, length);
+			service.onSensorChanged(devID, sType, length, data, timestamp);
 		} catch (RemoteException e) {
 			Log.e(tag, "push");
 			e.printStackTrace();
+			parent.disconnected();
 		}
 	}
 
@@ -64,6 +65,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 		} catch (RemoteException e) {
 			Log.e(tag, "registerDriver");
 			e.printStackTrace();
+			parent.disconnected();
 		}
 		return false;
 	}
@@ -80,6 +82,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 		} catch (RemoteException e) {
 			Log.e(tag, "unregisterDriver ");
 			e.printStackTrace();
+			parent.disconnected();
 		}
 		return false;
 	}

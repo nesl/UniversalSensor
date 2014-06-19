@@ -107,7 +107,7 @@ public class UniversalDataStore extends Thread {
 					fetchRecord();
 					break;
 				case UniversalConstants.MSG_STORE_RECORD:
-					storeRecord(((SensorParcelWrapper) msg.obj).sp, ((SensorParcelWrapper) msg.obj).length);
+//					storeRecord(((SensorParcelWrapper) msg.obj).sp, ((SensorParcelWrapper) msg.obj).length);
 					break;
 				case UniversalConstants.MSG_ListHistoricalDevices:
 					listHistoricalDevices((IUniversalSensorManager)msg.obj);

@@ -15,6 +15,7 @@ import android.util.Log;
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
 import com.ucla.nesl.aidl.SensorParcel;
+import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalEventListener;
 import com.ucla.nesl.lib.UniversalSensorEvent;
 
@@ -182,11 +183,16 @@ public class UniversalSensorManager {
 		}
 
 		@Override
-		public void onSensorChanged(SensorParcel[] sp) throws RemoteException {
-			UniversalSensorEvent[] event = new UniversalSensorEvent[sp.length];
-			for (i = 0; i < sp.length; i++)
-				event[i] = new UniversalSensorEvent(sp[i]);
-			mlistener.onSensorChanged(event);
+		public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp) throws RemoteException 
+		{
+//			float[] mValues = new float[UniversalConstants.getValuesLength(sType)];
+//			UniversalSensorEvent[] event = new UniversalSensorEvent[values.length];
+//
+//			for (i = 0; i < timestamp.length; i++) {
+//				
+//				event[i] = new UniversalSensorEvent();
+//			}
+			mlistener.onSensorChanged(devID, sType, values, timestamp);
 		}
 
 		@Override

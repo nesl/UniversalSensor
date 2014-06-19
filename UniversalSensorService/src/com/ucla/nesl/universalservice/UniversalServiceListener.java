@@ -1,6 +1,8 @@
 package com.ucla.nesl.universalservice;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -150,21 +152,16 @@ public class UniversalServiceListener extends Thread {
 		}
 	}
 
-	public void onSensorChanged(SensorParcel[] event, int length)
+	public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
 	{
+		String	mSensorKey = mService.generateSensorKey(devID, sType);
 		_Sensor mSensor = null;
 		synchronized (sensorMap) {
-			if (sensorMap.containsKey(event[0].mSensorKey)) {
-				mSensor = sensorMap.get(event[0].mSensorKey);
-				mSensor.onSensorChanged(event, length);
+			if (sensorMap.containsKey(mSensorKey)) {
+				mSensor = sensorMap.get(mSensorKey);
+				mSensor.onSensorChanged(devID, sType, length, values, timestamp);
 			}
 		}
-		//		try {
-		//			mlistener.onSensorChanged(event);
-		//		} catch (RemoteException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
 	}
 
 	private void quit()
@@ -202,7 +199,7 @@ public class UniversalServiceListener extends Thread {
 		}
 	}
 
-	public SensorParcel[] pushData(String mSensorKey)
+	public void pushData(String mSensorKey)
 	{
 		_Sensor mSensor = null;
 		synchronized (sensorMap) {
@@ -210,7 +207,7 @@ public class UniversalServiceListener extends Thread {
 				mSensor = sensorMap.get(mSensorKey);
 			}
 		}
-		return mSensor.pushData();
+		mSensor.sendData();
 	}
 
 	@Override
@@ -225,7 +222,8 @@ public class UniversalServiceListener extends Thread {
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case UniversalConstants.MSG_OnSensorChanged:
-					onSensorChanged(((SensorParcelWrapper) msg.obj).sp, ((SensorParcelWrapper) msg.obj).length);
+					SensorParcelWrapper spw = (SensorParcelWrapper) msg.obj;
+					onSensorChanged(spw.devID, spw.sType, spw.length, spw.values, spw.timestamp);
 					break;
 				case UniversalConstants.MSG_Quit:
 					quit();
@@ -244,6 +242,10 @@ public class UniversalServiceListener extends Thread {
 					break;
 				case UniversalConstants.MSG_UnregisterListener:
 					unregister((String) msg.obj);
+					break;
+				case UniversalConstants.MSG_FETCH_RECORD:
+					pushData((String) msg.obj);
+					break;
 				default:
 					break;
 				}
@@ -261,25 +263,30 @@ public class UniversalServiceListener extends Thread {
 		int					    sbundleSize = 0;
 		String 					sensorID 	= null;
 		boolean					periodic	= false;
-		ArrayList<SensorParcel> eventQueue  = null;
+		int						valuesLength = -1;
+		int						valueIndex	= 0;
+		int 					tsIndex		= 0;
+		float[]					values		= null;
+		long[]					timestamp	= null;
+		ArrayList<Float>		valueQueue	= new ArrayList<Float>();
+		ArrayList<Long> 		tsQueue		= new ArrayList<Long>();
 		UniversalServiceSensor 	mSensor  	= null;
 		UniversalServiceListener parent     = null;
-		IUniversalSensorManager mlistener    = null;
+		IUniversalSensorManager mlistener   = null;
 
 		public _Sensor(UniversalServiceListener parent, IUniversalSensorManager mlistener,
-				String sensorID, UniversalServiceSensor mSensor, boolean periodic, int lRate, int bundleSize)
+				String sensorID, UniversalServiceSensor mSensor, boolean periodic, int lRate, int lBundleSize)
 		{
 			this.parent    = parent;
 			this.mlistener = mlistener;
 			this.sensorID  = new String(sensorID);
 			this.mSensor   = mSensor;
-			this.periodic  = periodic;
-			this.lRate     = lRate;
-			this.lbundleSize = bundleSize;
-			eventQueue 		= new ArrayList<SensorParcel>();
+			this.valuesLength = UniversalConstants.getValuesLength(mSensor.sType);
+			updateListenerParam(periodic, lRate, lBundleSize);
+//			eventQueue 		= new ArrayList<SensorParcel>();
 		}
 
-		private void updatecounter()
+	    private void updatecounter()
 		{
 			counter = (int) Math.ceil(1.0*sRate/lRate);
 		}
@@ -289,8 +296,16 @@ public class UniversalServiceListener extends Thread {
 			this.periodic  = periodic;
 			this.lRate     = lRate;
 			this.lbundleSize = lBundleSize;
+			initIndex();
+			values 		   = new float[valuesLength * lBundleSize];
+			timestamp	   = new long[lBundleSize];
 			updatecounter();
 			Log.i(tag, "updateListenerParam: rate:" + lRate + " bundleSize: " + lbundleSize + " counter: " + counter);
+		}
+
+		private void initIndex()
+		{
+			valueIndex = tsIndex = 0;
 		}
 
 		public void updateSamplingParam(int sRate, int sBundleSize)
@@ -314,20 +329,24 @@ public class UniversalServiceListener extends Thread {
 
 		private void queueData()
 		{
-			while (eventQueue.size() <= lbundleSize)
-				eventQueue.remove(0);
+			while (tsQueue.size() > lbundleSize) {
+				for (int i = 0; i < valuesLength; i++)
+					valueQueue.remove(0);
+				tsQueue.remove(0);
+			}
 		}
+
 		private void sendData()
 		{
-			SensorParcel[] eventBundle = null;
-
-			while (eventQueue.size() >= lbundleSize) {
-				eventBundle = new SensorParcel[lbundleSize];
+			while (tsQueue.size() >= lbundleSize) {
+				initIndex();
 				for (int i = 0; i < lbundleSize; i++) {
-					eventBundle[i] = eventQueue.remove(0);
+					for (int j = 0; j < valueIndex; j++)
+						values[valueIndex++] = valueQueue.remove(0);
+					timestamp[tsIndex++] = tsQueue.remove(0);
 				}
 				try {
-					mlistener.onSensorChanged(eventBundle);
+					mlistener.onSensorChanged(mSensor.getDevID(), mSensor.sType, values, timestamp);
 				} catch (DeadObjectException e) {
 					Log.e(tag, "Listener " + parent.getId() + " is dead, cleaning it up");
 					Handler mhandler = parent.mService.getHandler();
@@ -338,27 +357,17 @@ public class UniversalServiceListener extends Thread {
 			}
 		}
 
-		synchronized public SensorParcel[] pushData()
+		synchronized public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
 		{
-			if (periodic == false)
-				return null;
-
-			SensorParcel[] eventBundle = new SensorParcel[lbundleSize];
-			for (int i = 0; i < lbundleSize && eventQueue.size() > 0; i++) {
-				eventBundle[i] = eventQueue.remove(0);
-			}
-			return eventBundle;
-		}
-
-
-		synchronized public void onSensorChanged(SensorParcel[] sp, int length)
-		{
-			for (int i = 0; i < sp.length; i++) {
-				counter--;
-				if (counter <= 0) {
-					eventQueue.add(sp[i]);
-					updatecounter();
+			int valuesLength = UniversalConstants.getValuesLength(sType);
+			for (int i = 0, k = 0; i < length; i++, k += valuesLength) {
+				if (--counter > 0)
+					continue;
+				for (int j = 0; j < valuesLength; j++) {
+					valueQueue.add(values[k + j]);
 				}
+				tsQueue.add(timestamp[i]);
+				updatecounter();
 			}
 			if (periodic)
 				queueData();

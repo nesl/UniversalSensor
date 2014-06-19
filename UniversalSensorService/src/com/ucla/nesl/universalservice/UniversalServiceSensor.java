@@ -159,9 +159,9 @@ public class UniversalServiceSensor {
 		updateSamplingParams();
 	}
 
-	public void onSensorChanged(SensorParcel[] event, int length)
+	public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
 	{
-		SensorParcelWrapper mSensorParcelWrapper = new SensorParcelWrapper(event, length);
+		SensorParcelWrapper mSensorParcelWrapper = new SensorParcelWrapper(devID, sType, length, values, timestamp);
 		synchronized (listenersList) {
 			// Go through the list of listeners and send the data to them
 			for (Map.Entry<String, _Listener> entry : listenersList.entrySet())
@@ -170,7 +170,7 @@ public class UniversalServiceSensor {
 				mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_OnSensorChanged, mSensorParcelWrapper));
 			}
 		}
-		// TODO: send it to the datastore too
+
 		Handler mHandler = UniversalDataStore.getHandler();
 		if (mHandler != null)
 			mHandler.sendMessage(mHandler.obtainMessage(UniversalConstants.MSG_STORE_RECORD, mSensorParcelWrapper));

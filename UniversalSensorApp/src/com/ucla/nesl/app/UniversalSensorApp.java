@@ -219,14 +219,14 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	long oldTime;
 
 	@Override
-	public void onSensorChanged(UniversalSensorEvent[] event) {
-		val ++;
+	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp) {
+		val += timestamp.length;
 		if (val == 1000) {
 			val = 0;
 			oldTime = currentTime;
 			currentTime = System.currentTimeMillis();
 			Long timeSpent = (currentTime - oldTime);// / 1000.0;
-			Log.i(tag, "time: " + timeSpent + ", lenght: " + event.length + ", "+ event[0].devID + "SensorType:" + UniversalSensorNameMap.getName(event[0].sType));
+			Log.i(tag, "time: " + timeSpent + ", lenght: " + timestamp.length + ", "+ devID + "SensorType:" + UniversalSensorNameMap.getName(sType));
 		}
 	}
 

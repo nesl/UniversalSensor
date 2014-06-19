@@ -408,7 +408,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	}
 
 	@Override
-	public SensorParcel[] fetchRecord(String devID, int sType) {
+	public boolean fetchRecord(String devID, int sType) {
 		String mListenerKey = generateListenerKey(Binder.getCallingPid());
 		String mSensorKey = generateSensorKey(devID, sType);
 		UniversalServiceListener mlistener;
@@ -418,11 +418,13 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		// remove the entry from registeredListener
 		if (!hasRegisteredListener(mListenerKey)) {
 			Log.i(tag, "Failed to unregister listener to sensor " + devID + ":" + UniversalSensorNameMap.getName(sType));
-			return null;
+			return false;
 		}
 		mlistener = getRegisteredListener(mListenerKey);
 
-		return mlistener.pushData(mSensorKey);
+		Handler mHandler = mlistener.getHandler();
+		mHandler.sendMessage(mHandler.obtainMessage(UniversalConstants.MSG_FETCH_RECORD, mSensorKey));
+		return true;
 	}
 
 	public boolean unregisterListenerAll(String listenerKey)
@@ -456,7 +458,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 
 	@Override
 	public void registerNotification(IUniversalSensorManager mManager)
-			throws RemoteException {
+	{
 		String mlistenerKey = generateListenerKey(Binder.getCallingPid());
 
 		Log.d(tag, "adding listener to notification list " + Binder.getCallingPid());
@@ -471,23 +473,27 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	}
 
 	@Override
-	public void onSensorChanged(SensorParcel[] event, int length)
-			throws RemoteException {
-		String key = generateSensorKey(event[0].devID, event[0].sType);
-		event[0].mSensorKey = key;
+	public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
+	{
+		String key = generateSensorKey(devID, sType);
 
-		UniversalServiceSensor msensor = getRegisteredDevice(event[0].devID).getRegisteredSensor(key);
+		if (getRegisteredDevice(devID) == null) {
+			Log.e(tag, "onSensorChanged:: received data from " + devID + ", but device is not registered");
+			return;
+		}
+	
+		UniversalServiceSensor msensor = getRegisteredDevice(devID).getRegisteredSensor(key);
 		if(msensor == null) {
-			Log.i(tag, "msensor is null " + key);
+			Log.e(tag, "onSensorChanged:: msensor is null " + key);
 			return;
 		}
 
-		msensor.onSensorChanged(event, length);
-
+		msensor.onSensorChanged(devID, sType, length, values, timestamp);
 	}
 
 	@Override
-	public boolean listHistoricalDevices(IUniversalSensorManager mListenerStub) throws RemoteException {
+	public boolean listHistoricalDevices(IUniversalSensorManager mListenerStub)
+	{
 		String mlistenerKey = generateListenerKey(Binder.getCallingPid());
 		Log.d(tag, "adding listener to notification list " + Binder.getCallingPid());
 
@@ -504,8 +510,8 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	@Override
 	public boolean fetchHistoricalData(IUniversalSensorManager mListener,
 			int txnID, String devID, int sType, long start, long end,
-			long interval, int function) throws RemoteException {
-
+			long interval, int function)
+	{
 		Bundle mBundle = new Bundle();
 		mBundle.putString("tableName", generateSensorKey(devID, sType));
 		mBundle.putInt("txnID", txnID);

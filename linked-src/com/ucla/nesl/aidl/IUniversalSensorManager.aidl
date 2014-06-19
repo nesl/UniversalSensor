@@ -3,7 +3,7 @@ import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.SensorParcel;
 
 interface IUniversalSensorManager {
-	oneway void onSensorChanged(in SensorParcel[] event);
+	oneway void onSensorChanged(String devID, int sType, in float[] data, in long[] timestamp);
 	void notifyNewDevice(in Device mdevice);
 	void notifySensorChanged(String devID, int sType, int action);
 	void listHistoricalDevice(in String[] devices);

@@ -23,7 +23,7 @@ public interface UniversalEventListener {
 	 *  
 	 * @param event the {@link android.hardware.SensorEvent SensorEvent}.                
 	 */                                                                                  
-	public void onSensorChanged(UniversalSensorEvent[] event);                                      
+	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp);                                      
 
 	public void notifySensorChanged(String devID, int sType, int action);
 
