@@ -177,6 +177,7 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 					Thread.sleep(RETRY_INTERVAL);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
+					break;
 				}
 			}
 			Log.i(TAG, "Connected to Zephyr!");
@@ -686,9 +687,6 @@ public class ZephyrDriver implements Runnable, UniversalDriverListener {
 		if (isAllSensorExceptAccUnflagged()) {
 			sendStopGeneralPacket();
 		}
-//		if (isAllSensorUnflagged()) {
-//			stopReceiveThread();
-//		}
 	}
 	
 	private void handleStartSensor(int sensorId) {

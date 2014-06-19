@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.content.Context;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
@@ -22,6 +22,8 @@ import com.ucla.nesl.lib.HelperWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorNameMap;
+import com.ucla.nesl.universaldatastore.DataPurger;
+import com.ucla.nesl.universaldatastore.DataStoreManager;
 import com.ucla.nesl.universaldatastore.UniversalDataStore;
 
 public class UniversalManagerService extends IUniversalManagerService.Stub {
@@ -30,6 +32,8 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	private Thread cleanupThread;
 	UniversalService parent;
 	UniversalDataStore mUniversalDataStore = null;
+	private static DataStoreManager mDataStoreManager = null;
+	DataPurger mDataPurger = null;
 	Map<String, UniversalServiceDevice> registeredDevices = new HashMap<String, UniversalServiceDevice>();
 	HashMap<String, UniversalServiceListener> registeredListeners = new HashMap<String, UniversalServiceListener>();
 
@@ -61,14 +65,25 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 		return mHandler;
 	}
 
+	public static void createDataStore(Context context)
+	{
+		if (mDataStoreManager == null)
+			mDataStoreManager = new DataStoreManager(context, null, null, 1);
+	}
+
 	public UniversalManagerService(UniversalService parent) {
 		this.parent   = parent;
 		cleanupThread = new Thread(cleanupRunnable);
 		cleanupThread.start();
 
+		createDataStore(parent.getApplicationContext());
+
 		// Create the DataStore thread
-		mUniversalDataStore = new UniversalDataStore(parent.getApplicationContext());
+		mUniversalDataStore = new UniversalDataStore(mDataStoreManager);
 		mUniversalDataStore.start();
+		
+		mDataPurger = new DataPurger(mDataStoreManager);
+		mDataPurger.start();
 	}
 
 	public String generateSensorKey(String devID, int sType)

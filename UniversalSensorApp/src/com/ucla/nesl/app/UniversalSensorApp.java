@@ -139,8 +139,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 			@Override
 			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-
 			}
 		});
 		startZephyr.setOnClickListener(new OnClickListener() {
@@ -234,8 +232,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 	@Override
 	public void notifySensorChanged(String devID, int sType, int action) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

@@ -1,12 +1,10 @@
 package com.ucla.nesl.universaldatastore;
 
-import java.io.StringWriter;
 import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,7 +21,6 @@ import com.ucla.nesl.lib.UniversalConstants;
 public class UniversalDataStore extends Thread {
 	private static Handler mHandler = null;
 	private static String tag = UniversalDataStore.class.getCanonicalName();
-	private static UniversalDataStore mUniversalDataStore = null;
 	private DataStoreManager mDataStoreManager = null;
 
 	public static Handler getHandler()
@@ -31,9 +28,9 @@ public class UniversalDataStore extends Thread {
 		return mHandler;
 	}
 
-	public UniversalDataStore(Context context)
+	public UniversalDataStore(DataStoreManager mDataStoreManager)
 	{
-		mDataStoreManager = new DataStoreManager(context, null, null, 1);
+		this.mDataStoreManager = mDataStoreManager;
 	}
 
 	private void fetchRecord()
@@ -74,6 +71,10 @@ public class UniversalDataStore extends Thread {
 		long newstart = start;
 		while(newstart <= end) {
 			try {
+				if (mDataStoreManager == null) {
+					Log.e(tag, "mDataStoreManager is null");
+					return;
+				}
 				HashMap<String, Float> h = mDataStoreManager.compute(tableName, sType, function, newstart, newstart + interval);
 				if (h != null)
 					obj.put(""+newstart, h);
@@ -81,22 +82,10 @@ public class UniversalDataStore extends Thread {
 					break;
 
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			newstart = newstart + interval;
 		}
-		//		HashMap<String, Float> h = new HashMap<String, Float>();
-		//		h.put("x", 1.0f);
-		//		JSONObject obj = new JSONObject();
-		//		
-		//		try {
-		//			obj.put("my_name_is ", "Junaid");
-		//			obj.put("2134-60", h);
-		//		} catch (JSONException e) {
-		//			// TODO Auto-generated catch block
-		//			e.printStackTrace();
-		//		}
 
 		try {
 			mListener.historicalDataResponse(txnID, devID, sType, function, obj.toString());
@@ -105,8 +94,10 @@ public class UniversalDataStore extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
 	@Override
-	public void run() {
+	public void run()
+	{
 		Looper.prepare();
 		mHandler = new Handler() {
 			@Override

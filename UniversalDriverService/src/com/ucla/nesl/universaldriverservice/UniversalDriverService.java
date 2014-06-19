@@ -143,7 +143,6 @@ public class UniversalDriverService extends Service implements SensorEventListen
 
 	@Override
 	public void disconnected() {
-		// TODO Auto-generated method stub
-
+		setRate(Sensor.TYPE_ALL, 0, 0);
 	}
 }

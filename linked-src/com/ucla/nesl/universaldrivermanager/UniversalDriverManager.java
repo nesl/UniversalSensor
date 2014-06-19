@@ -47,6 +47,11 @@ public class UniversalDriverManager {
 		device.setDevID(devID);
 	}
 
+	/*
+	 * Sends the Sensor data to the UniversalService.
+	 * @params event: Array containing the sensor sample
+	 * params length: Bundle size
+	 */
 	public Boolean push(UniversalSensorEvent[] event, int length)
 	{
 		remoteConnection.push(event, length);
@@ -75,6 +80,10 @@ public class UniversalDriverManager {
 		return true;
 	}
 
+	/*
+	 * Use this when the driver wants to unregister itself with the UniversalService. 
+	 * This can happen when the driver cannot connect to the device anymore.
+	 */
 	public boolean unregisterDriver(UniversalDriverListener listener, int sType)
 	{
 		Log.i(tag, "unregistering the device " + devID);
@@ -89,6 +98,9 @@ public class UniversalDriverManager {
 		mDriverManagerStub.mlistener.disconnected();
 	}
 
+	/*
+	 * Check to see if the driver is connected to the UniversalService.
+	 */
 	public boolean isConnected()
 	{
 		return remoteConnection.isConnected();
