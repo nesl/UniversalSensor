@@ -527,7 +527,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			return false;
 		}
 
-
+		Log.d(tag, "request for historical data of " + generateSensorKey(devID, sType) + " table");
 		mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_FETCH_HISTORICAL_DATA, new HelperWrapper(mListener, mBundle)));
 		return false;
 	}

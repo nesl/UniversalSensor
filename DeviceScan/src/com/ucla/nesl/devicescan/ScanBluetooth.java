@@ -61,7 +61,7 @@ public class ScanBluetooth {
 			if(BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = receiverIntent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 				Log.d(tag, "Name: " + device.getName() + ", address: " + device.getAddress() + " , class: " + device.getBluetoothClass() + " , ");
-				if (device.getName().matches(ZephyrPattern)) {
+				if (device.getName() != null && device.getName().matches(ZephyrPattern)) {
 					Log.d(tag, "Zephyr device: " + device.getName() + ", address: " + device.getAddress());
 					Intent intent = new Intent("ZephyrDriverBroadcastReceiver");
 					intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);

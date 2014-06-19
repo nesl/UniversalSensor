@@ -87,6 +87,7 @@ public class UniversalDataStore extends Thread {
 			newstart = newstart + interval;
 		}
 
+		Log.d(tag, "Successfully completed fetch historical data request, sending response");
 		try {
 			mListener.historicalDataResponse(txnID, devID, sType, function, obj.toString());
 		} catch (RemoteException e) {
