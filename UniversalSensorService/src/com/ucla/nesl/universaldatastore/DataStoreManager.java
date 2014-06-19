@@ -86,25 +86,34 @@ public class DataStoreManager extends SQLiteOpenHelper {
 
 	/**
 	 * Insert the sensor data into the table
-	 * @param sp SensorParcel
+	 * @param tableName Name of the table where we insert into
+	 * @param sType sensor type
+	 * @param values Array of sensor samples. The number of sensor
+	 * 			samples is equal to the bundlesize of that sensor
+	 * @param for each sensor sample it contains a corresponding timestamp 
 	 * @return
 	 */
-	public boolean insertSensorData(SensorParcel[] spArray)
+	public boolean insertSensorData(String tableName, int sType, float[] values, long[] timestamp)
 	{
 		SQLiteDatabase db = null;
 
 		db = this.getWritableDatabase();
 
 		try {
-			for (SensorParcel sp : spArray) {
+			int valueLength = UniversalConstants.getValuesLength(sType);
+			float[] sensorValue = new float[valueLength];
+			for (int i = 0, k = 0; i < timestamp.length; i++) {
+				for (int j = 0; j < valueLength; j++) {
+					sensorValue[j] = values[k++];
+				}
 				try {
-					_insert(db, sp.mSensorKey, sp.values, sp.timestamp);
+					_insert(db, tableName, sensorValue, timestamp[i]);
 				} catch (SQLException e) {
-					Log.d(tag, "insertSensorData:: caught exception, creating table " + sp.mSensorKey);
+					Log.d(tag, "insertSensorData:: caught exception, creating table " + tableName);
 					db.close();
-					createTable(sp.mSensorKey);
+					createTable(tableName);
 					db = this.getWritableDatabase();
-					_insert(db, sp.mSensorKey, sp.values, sp.timestamp);
+					_insert(db, tableName, sensorValue, timestamp[i]);
 				}
 			}
 		} finally {

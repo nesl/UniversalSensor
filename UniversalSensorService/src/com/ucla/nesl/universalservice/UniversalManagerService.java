@@ -473,7 +473,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	}
 
 	@Override
-	public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
+	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp)
 	{
 		String key = generateSensorKey(devID, sType);
 
@@ -488,7 +488,7 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 			return;
 		}
 
-		msensor.onSensorChanged(devID, sType, length, values, timestamp);
+		msensor.onSensorChanged(devID, sType, values, timestamp);
 	}
 
 	@Override

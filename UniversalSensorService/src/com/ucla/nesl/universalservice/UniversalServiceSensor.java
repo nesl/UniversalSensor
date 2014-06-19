@@ -159,9 +159,9 @@ public class UniversalServiceSensor {
 		updateSamplingParams();
 	}
 
-	public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
+	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp)
 	{
-		SensorParcelWrapper mSensorParcelWrapper = new SensorParcelWrapper(devID, sType, length, values, timestamp);
+		SensorParcelWrapper mSensorParcelWrapper = new SensorParcelWrapper(devID, sType, mSensorKey, values, timestamp);
 		synchronized (listenersList) {
 			// Go through the list of listeners and send the data to them
 			for (Map.Entry<String, _Listener> entry : listenersList.entrySet())

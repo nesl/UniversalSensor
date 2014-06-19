@@ -4,15 +4,15 @@ import com.ucla.nesl.aidl.SensorParcel;
 
 public class SensorParcelWrapper {
 	public float[] values;
-	public int length;
 	public long[] timestamp;
+	public String mSensorKey;
 	public String devID;
 	public int sType;
-	public SensorParcelWrapper(String devID, int sType, int length, float[] values, long[] timestamp)
+	public SensorParcelWrapper(String devID, int sType, String mSensorKey, float[] values, long[] timestamp)
 	{
 		this.devID  = devID;
 		this.sType  = sType;
-		this.length = length;
+		this.mSensorKey	= mSensorKey;
 		this.values = values;
 		this.timestamp = timestamp;
 	}

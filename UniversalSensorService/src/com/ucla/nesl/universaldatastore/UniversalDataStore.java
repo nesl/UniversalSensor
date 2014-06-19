@@ -37,9 +37,9 @@ public class UniversalDataStore extends Thread {
 	{
 	}
 
-	private void storeRecord(SensorParcel[] sp, int length)
+	private void storeRecord(SensorParcelWrapper spw)
 	{
-		mDataStoreManager.insertSensorData(sp);//, length);
+		mDataStoreManager.insertSensorData(spw.mSensorKey, spw.sType, spw.values, spw.timestamp);
 	}
 
 	private void listHistoricalDevices(IUniversalSensorManager mlistener)
@@ -107,7 +107,7 @@ public class UniversalDataStore extends Thread {
 					fetchRecord();
 					break;
 				case UniversalConstants.MSG_STORE_RECORD:
-//					storeRecord(((SensorParcelWrapper) msg.obj).sp, ((SensorParcelWrapper) msg.obj).length);
+					storeRecord((SensorParcelWrapper) msg.obj);
 					break;
 				case UniversalConstants.MSG_ListHistoricalDevices:
 					listHistoricalDevices((IUniversalSensorManager)msg.obj);

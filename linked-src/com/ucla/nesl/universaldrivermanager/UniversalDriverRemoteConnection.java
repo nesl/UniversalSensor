@@ -35,7 +35,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 		parent.disconnected();
 	}
 
-	public void push(String devID, int sType, int length, float[] data, long[] timestamp)
+	public void push(String devID, int sType, float[] data, long[] timestamp)
 	{
 		if (service == null) {
 			parent.connectRemote();
@@ -44,7 +44,7 @@ public class UniversalDriverRemoteConnection implements ServiceConnection
 
 		try {
 			// Service can be null here, so try to reconnect and fail this 
-			service.onSensorChanged(devID, sType, length, data, timestamp);
+			service.onSensorChanged(devID, sType, data, timestamp);
 		} catch (RemoteException e) {
 			Log.e(tag, "push");
 			e.printStackTrace();

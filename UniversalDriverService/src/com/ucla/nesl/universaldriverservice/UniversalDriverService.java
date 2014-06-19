@@ -118,7 +118,7 @@ public class UniversalDriverService extends Service implements SensorEventListen
 	public void onSensorChanged(SensorEvent event)
 	{
 		timeStamp[0] = event.timestamp;
-		mdriverManager1.push(devID, event.sensor.getType(), bundleSize[0], event.values, timeStamp);
+		mdriverManager1.push(devID, event.sensor.getType(), event.values, timeStamp);
 	}
 
 	int getDelayType(int sType, int rate)

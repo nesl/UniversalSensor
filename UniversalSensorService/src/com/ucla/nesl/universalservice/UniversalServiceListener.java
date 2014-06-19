@@ -152,14 +152,14 @@ public class UniversalServiceListener extends Thread {
 		}
 	}
 
-	public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
+	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp)
 	{
 		String	mSensorKey = mService.generateSensorKey(devID, sType);
 		_Sensor mSensor = null;
 		synchronized (sensorMap) {
 			if (sensorMap.containsKey(mSensorKey)) {
 				mSensor = sensorMap.get(mSensorKey);
-				mSensor.onSensorChanged(devID, sType, length, values, timestamp);
+				mSensor.onSensorChanged(devID, sType, values, timestamp);
 			}
 		}
 	}
@@ -223,7 +223,7 @@ public class UniversalServiceListener extends Thread {
 				switch (msg.what) {
 				case UniversalConstants.MSG_OnSensorChanged:
 					SensorParcelWrapper spw = (SensorParcelWrapper) msg.obj;
-					onSensorChanged(spw.devID, spw.sType, spw.length, spw.values, spw.timestamp);
+					onSensorChanged(spw.devID, spw.sType, spw.values, spw.timestamp);
 					break;
 				case UniversalConstants.MSG_Quit:
 					quit();
@@ -357,10 +357,10 @@ public class UniversalServiceListener extends Thread {
 			}
 		}
 
-		synchronized public void onSensorChanged(String devID, int sType, int length, float[] values, long[] timestamp)
+		synchronized public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp)
 		{
 			int valuesLength = UniversalConstants.getValuesLength(sType);
-			for (int i = 0, k = 0; i < length; i++, k += valuesLength) {
+			for (int i = 0, k = 0; i < timestamp.length; i++, k += valuesLength) {
 				if (--counter > 0)
 					continue;
 				for (int j = 0; j < valuesLength; j++) {
