@@ -36,8 +36,8 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	private EditText edittext;
 	private String tag = UniversalSensorApp.class.getCanonicalName();
 	private UniversalSensorManager mManager;    
-	private String UNIVERSALDriverPackage = "com.ucla.nesl.universaldriverservice";
-	private String UNIVERSALDriverClass = "com.ucla.nesl.universaldriverservice.UniversalDriverService";
+	private String UNIVERSALDriverPackage = "com.ucla.nesl.universalphonedriver";
+	private String UNIVERSALDriverClass = "com.ucla.nesl.universalphonedriver.UniversalPhoneDriver";
 	private ArrayList<Device> dlist;
 	Device device;
 
@@ -129,7 +129,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 			@Override
 			public void onClick(View arg0) {
-				Intent intent = new Intent("bindUniversalDriverService");
+				Intent intent = new Intent("bindUniversalPhoneDriver");
 				intent.setClassName(UNIVERSALDriverPackage, UNIVERSALDriverClass);
 				startService(intent);
 			}

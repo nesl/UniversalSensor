@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>                                                                                                                                            
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<TableLayout
+	    android:layout_height="wrap_content" 
+	    android:layout_width="fill_parent">
+        <TableRow 
+            android:gravity="center" 
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content">
+	        <Button 
+	            android:id="@+id/scandevice" 
+	            android:text="scandevice" 
+	            android:layout_height="wrap_content" 
+	            android:layout_width="wrap_content" />
+	        <Button
+	            android:id="@+id/register"
+	            android:text="register"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />
+	        
+	        <Button
+	            android:id="@+id/unregister"
+	            android:text="unregister"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />	        
+        </TableRow>
+		<TableRow
+         	android:gravity="center" 
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content">
+	        <Button
+	            android:id="@+id/registerDriver"
+	            android:text="registerDriver"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />
+	        <Button
+	            android:id="@+id/unregisterDriver"
+	            android:text="unregisterDriver"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />
+
+	        <Button
+	            android:id="@+id/startZephyr"
+	            android:text="startZephyr"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />
+	       <Button
+	            android:id="@+id/startTestDriver"
+	            android:text="startTestDriver"
+	            android:layout_height="wrap_content"
+	            android:layout_width="wrap_content" />
+        </TableRow>
+        <TableRow
+         	android:gravity="center" 
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content">
+		        <EditText android:id="@+id/edittext"
+				android:layout_width="fill_parent"
+				android:layout_height="wrap_content" />
+	    </TableRow>
+	</TableLayout>
+	
+	<TextView android:textSize="22sp" android:textStyle="bold"
+        android:id="@+id/messageTextView" android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

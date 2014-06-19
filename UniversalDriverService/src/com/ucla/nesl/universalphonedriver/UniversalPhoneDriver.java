@@ -1,4 +1,4 @@
-package com.ucla.nesl.universaldriverservice;
+package com.ucla.nesl.universalphonedriver;
 
 import java.util.HashMap;
 
@@ -17,8 +17,8 @@ import com.ucla.nesl.lib.UniversalSensor;
 import com.ucla.nesl.lib.UniversalSensorEvent;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 
-public class UniversalDriverService extends Service implements SensorEventListener, UniversalDriverListener {
-	private static String tag = UniversalDriverService.class.getCanonicalName();
+public class UniversalPhoneDriver extends Service implements SensorEventListener, UniversalDriverListener {
+	private static String tag = UniversalPhoneDriver.class.getCanonicalName();
 	private static Boolean flag = false;
 	private String devID = "phoneSensor1";
 	Handler handler, h2;
