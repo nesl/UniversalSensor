@@ -72,7 +72,7 @@ public class UniversalPhoneDriver extends Service implements SensorEventListener
 
 	void unregister()
 	{
-		mdriverManager1.unregisterDriver(this, UniversalSensor.TYPE_ALL);
+		mdriverManager1.unregisterDriver(UniversalSensor.TYPE_ALL);
 		handler.postDelayed(r, 10000);
 		registered = false;
 		rate = 0;
