@@ -25,6 +25,13 @@
                 <action android:name="ScanDevice"></action>
             </intent-filter>
         </service>
+         <activity android:name="com.ucla.nesl.devicescan.startup.StartupApp"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
