@@ -260,27 +260,6 @@ public class AndroidSensor {
 		return sSensorReportingModes[offset];
 	}
 
-	static int getMaxLengthValuesArray(AndroidSensor sensor, int sdkLevel) {
-		int type = sensor.mType;
-		// RotationVector length has changed to 3 to 5 for API level 18
-		// Set it to 3 for backward compatibility.
-		if (type == AndroidSensor.TYPE_ROTATION_VECTOR &&
-				sdkLevel <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-			return 3;
-		}
-		int offset = type * 2 + 1;
-		if (offset >= sSensorReportingModes.length) {
-			// we don't know about this sensor, so this is probably a
-			// vendor-defined sensor, in that case, we don't know how many value
-			// it has
-			// so we return the maximum and assume the app will know.
-			// FIXME: sensor HAL should advertise how much data is returned per
-			// sensor
-			return 16;
-		}
-		return sSensorReportingModes[offset];
-	}
-
 	/* Some of these fields are set only by the native bindings in
 	 * SensorManager.
 	 */
