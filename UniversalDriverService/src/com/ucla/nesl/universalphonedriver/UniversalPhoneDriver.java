@@ -116,7 +116,8 @@ public class UniversalPhoneDriver extends Service implements SensorEventListener
 	// this is android's SensorEventListener function
 	@Override
 	public void onSensorChanged(SensorEvent event)
-	{
+	{	
+		//Log.i(tag, "event.values: " + event.values[0] + "," + event.values[1] + "," + event.values[2]);
 		timeStamp[0] = event.timestamp;
 		mdriverManager1.push(devID, event.sensor.getType(), event.values, timeStamp);
 	}

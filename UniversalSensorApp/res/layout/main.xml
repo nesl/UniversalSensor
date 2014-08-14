@@ -1,69 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>                                                                                                                                            
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
-	<TableLayout
-	    android:layout_height="wrap_content" 
-	    android:layout_width="fill_parent">
-        <TableRow 
-            android:gravity="center" 
-            android:layout_width="wrap_content" 
-            android:layout_height="wrap_content">
-	        <Button 
-	            android:id="@+id/listDevices" 
-	            android:text="listDevices" 
-	            android:layout_height="wrap_content" 
-	            android:layout_width="wrap_content" />
-	        <Button
-	            android:id="@+id/register"
-	            android:text="register"
-	            android:layout_height="wrap_content"
-	            android:layout_width="wrap_content" />
-	        
-	        <Button
-	            android:id="@+id/unregister"
-	            android:text="unregister"
-	            android:layout_height="wrap_content"
-	            android:layout_width="wrap_content" />	        
-        </TableRow>
-		<TableRow
-         	android:gravity="center" 
-            android:layout_width="wrap_content" 
-            android:layout_height="wrap_content">
-	        <Button
-	            android:id="@+id/registerDriver"
-	            android:text="registerDriver"
-	            android:layout_height="wrap_content"
-	            android:layout_width="wrap_content" />
-	        <Button
-	            android:id="@+id/unregisterDriver"
-	            android:text="unregisterDriver"
-	            android:layout_height="wrap_content"
-	            android:layout_width="wrap_content" />
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
-	        <Button
-	            android:id="@+id/startZephyr"
-	            android:text="startZephyr"
-	            android:layout_height="wrap_content"
-	            android:layout_width="wrap_content" />
-	       <Button
-	            android:id="@+id/startTestDriver"
-	            android:text="startTestDriver"
-	            android:layout_height="wrap_content"
-	            android:layout_width="wrap_content" />
-        </TableRow>
-        <TableRow
-         	android:gravity="center" 
-            android:layout_width="wrap_content" 
-            android:layout_height="wrap_content">
-		        <EditText android:id="@+id/edittext"
-				android:layout_width="fill_parent"
-				android:layout_height="wrap_content" />
-	    </TableRow>
-	</TableLayout>
-	
-	<TextView android:textSize="22sp" android:textStyle="bold"
-        android:id="@+id/messageTextView" android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <Button
+            android:id="@+id/listDevices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="listDevices" />
+
+        <Button
+            android:id="@+id/register"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/listDevices"
+            android:text="register" />
+
+        <Button
+            android:id="@+id/unregister"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/listDevices"
+            android:layout_toRightOf="@id/register"
+            android:text="unregister" />
+
+        <Button
+            android:id="@+id/registerDriver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/register"
+            android:text="registerDriver" />
+
+        <Button
+            android:id="@+id/unregisterDriver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/register"
+            android:layout_toRightOf="@id/registerDriver"
+            android:text="unregisterDriver" />
+
+        <Button
+            android:id="@+id/startZephyr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/registerDriver"
+            android:text="startZephyr" />
+
+        <Button
+            android:id="@+id/startTestDriver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/startZephyr"
+            android:text="startTestDriver" />
+
+        <EditText
+            android:id="@+id/edittext"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/startTestDriver" />
+
+        <TextView
+            android:id="@+id/messageTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
 </LinearLayout>

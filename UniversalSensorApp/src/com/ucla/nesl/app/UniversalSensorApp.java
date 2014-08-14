@@ -20,8 +20,6 @@ import android.widget.EditText;
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.app.universalsensorapp.R;
 import com.ucla.nesl.lib.UniversalEventListener;
-import com.ucla.nesl.lib.UniversalSensor;
-import com.ucla.nesl.lib.UniversalSensorEvent;
 import com.ucla.nesl.lib.UniversalSensorNameMap;
 import com.ucla.nesl.universalsensormanager.UniversalSensorManager;
 
@@ -45,6 +43,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
 		listDevices = (Button)findViewById(R.id.listDevices);
 		register = (Button)findViewById(R.id.register);
 		unregister = (Button)findViewById(R.id.unregister);
@@ -53,12 +52,15 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 		edittext = (EditText)findViewById(R.id.edittext);
 		startZephyr = (Button)findViewById(R.id.startZephyr);
 		startTestDriver = (Button)findViewById(R.id.startTestDriver);
+		
 		mManager = UniversalSensorManager.create(getApplicationContext(), this);
+		
 		PowerManager.WakeLock mWakeLock;
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
 		mWakeLock.setReferenceCounted(false);
 		mWakeLock.acquire();
+		
 		register.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -79,7 +81,7 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 				int bundleSize = Integer.valueOf(value.split(":")[3]);
 
 				device = dlist.get(devNum);
-				Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + ", " + bundleSize);
+				Log.i(tag, "registering Device " + device.getDevID() + "::" + devNum + "," + sType + "," + bundleSize);
 
 				registerListener(device.getDevID(), sType, rate, bundleSize);
 			}
@@ -93,15 +95,15 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 					Log.i(tag, "no elements");
 					return;
 				}
+				
 				Log.i(tag, "listing devices " + dlist.size());
 
-				for (Device device:mManager.listDevices())
+				for (Device device : dlist)
 				{
 					Log.i(tag, device.getDevID());
 
-
 					for (Integer i : device.getSensorList())
-						Log.i(tag, UniversalSensorNameMap.getName(i) + ", rate" + device.getRateList(i) + 
+						Log.i(tag, "SenorID: " + i + ", name:" + UniversalSensorNameMap.getName(i) + ", rate" + device.getRateList(i) + 
 								", bundleSize supported: " + device.getBundleSizeList(i));
 				}
 				registerNotification();
@@ -220,13 +222,28 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 
 	@Override
 	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp) {
+		//Log.i(tag, "(" + values[0] + "," + values[1] + "," + values[2] + ")");
 		val += timestamp.length;
-		if (val == 1000) {
+		if (val == 100) {
 			val = 0;
 			oldTime = currentTime;
 			currentTime = System.currentTimeMillis();
 			Long timeSpent = (currentTime - oldTime);// / 1000.0;
-			Log.i(tag, "time: " + timeSpent + ", lenght: " + timestamp.length + ", "+ devID + "SensorType:" + UniversalSensorNameMap.getName(sType));
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("timeSpent: ");
+			sb.append(timeSpent);
+			sb.append(", length: ");
+			sb.append(timestamp.length);
+			sb.append(", values: (");
+			for (float v : values) {
+				sb.append(v); sb.append(",");
+			}
+			sb.append("), ");
+			sb.append(devID);
+			sb.append(", SensorType:");
+			sb.append(UniversalSensorNameMap.getName(sType));
+			Log.i(tag, sb.toString());			
 		}
 	}
 

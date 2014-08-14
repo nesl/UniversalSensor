@@ -337,21 +337,22 @@ public class UniversalServiceListener extends Thread {
 		}
 
 		private void sendData()
-		{
+		{			
 			while (tsQueue.size() >= lbundleSize) {
 				initIndex();
 				for (int i = 0; i < lbundleSize; i++) {
-					for (int j = 0; j < valueIndex; j++)
+					for (int j = 0; j < valuesLength; j++)
 						values[valueIndex++] = valueQueue.remove(0);
 					timestamp[tsIndex++] = tsQueue.remove(0);
 				}
 				try {
+					//Log.i(tag, "values: " + values[0] + "," + values[1] + "," + values[2]);
 					mlistener.onSensorChanged(mSensor.getDevID(), mSensor.sType, values, timestamp);
 				} catch (DeadObjectException e) {
 					Log.e(tag, "Listener " + parent.getId() + " is dead, cleaning it up");
 					Handler mhandler = parent.mService.getHandler();
 					mhandler.sendMessage(mhandler.obtainMessage(UniversalConstants.MSG_UnregisterListener, parent.getID()));
-				}catch (RemoteException e) {
+				} catch (RemoteException e) {
 					e.printStackTrace();
 				}
 			}
@@ -369,6 +370,14 @@ public class UniversalServiceListener extends Thread {
 				tsQueue.add(timestamp[i]);
 				updatecounter();
 			}
+			
+			/*StringBuilder sb = new StringBuilder();
+			sb.append("after values in q: ");
+			for (float v : valueQueue) {
+				sb.append(v); sb.append(",");
+			}
+			Log.i(tag, sb.toString());*/
+			
 			if (periodic)
 				queueData();
 			else

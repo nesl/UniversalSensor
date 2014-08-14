@@ -52,7 +52,7 @@ public class UniversalDriverManager {
 	 * @params event: Array containing the sensor sample
 	 * params length: Bundle size
 	 */
-	public Boolean push(String devID, int sType,float[] data, long[] timestamp)
+	public Boolean push(String devID, int sType, float[] data, long[] timestamp)
 	{
 		remoteConnection.push(devID, sType, data, timestamp);
 		return true;

@@ -161,6 +161,7 @@ public class UniversalServiceSensor {
 
 	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp)
 	{
+		//Log.i(tag, "values: " + values[0] + "," + values[1] + "," + values[2]);
 		SensorParcelWrapper mSensorParcelWrapper = new SensorParcelWrapper(devID, sType, mSensorKey, values, timestamp);
 		synchronized (listenersList) {
 			// Go through the list of listeners and send the data to them

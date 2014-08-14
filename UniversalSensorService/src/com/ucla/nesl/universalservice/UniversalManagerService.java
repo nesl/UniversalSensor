@@ -475,6 +475,8 @@ public class UniversalManagerService extends IUniversalManagerService.Stub {
 	@Override
 	public void onSensorChanged(String devID, int sType, float[] values, long[] timestamp)
 	{
+		//Log.i(tag, "values: " + values[0] + "," + values[1] + "," + values[2]);
+		
 		String key = generateSensorKey(devID, sType);
 
 		if (getRegisteredDevice(devID) == null) {
