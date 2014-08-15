@@ -10,7 +10,6 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 
-import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.SensorParcelWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.universaldatastore.UniversalDataStore;

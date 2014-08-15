@@ -11,7 +11,6 @@ import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.UniversalConstants;
 
 /**

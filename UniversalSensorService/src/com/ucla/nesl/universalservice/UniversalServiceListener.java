@@ -1,8 +1,6 @@
 package com.ucla.nesl.universalservice;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +14,6 @@ import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
-import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.SensorParcelWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 

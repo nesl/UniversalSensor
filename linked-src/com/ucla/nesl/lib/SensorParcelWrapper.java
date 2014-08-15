@@ -1,6 +1,5 @@
 package com.ucla.nesl.lib;
 
-import com.ucla.nesl.aidl.SensorParcel;
 
 public class SensorParcelWrapper {
 	public float[] values;

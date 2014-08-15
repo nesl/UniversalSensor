@@ -17,7 +17,6 @@ import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
 import com.ucla.nesl.aidl.IUniversalManagerService;
 import com.ucla.nesl.aidl.IUniversalSensorManager;
-import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.lib.HelperWrapper;
 import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalSensor;

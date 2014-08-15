@@ -128,7 +128,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 		});
 
 		registerDriver.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View arg0) {
 				Intent intent = new Intent("bindUniversalPhoneDriver");
@@ -138,11 +137,11 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 		});
 
 		unregisterDriver.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View arg0) {
 			}
 		});
+		
 		startZephyr.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
@@ -160,7 +159,6 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 		});
 
 		startTestDriver.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View arg0) {
 				String value = edittext.getText().toString();

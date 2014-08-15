@@ -6,7 +6,6 @@ import java.util.Map;
 import org.json.JSONObject;
 
 import com.ucla.nesl.aidl.Device;
-import com.ucla.nesl.aidl.SensorParcel;
 
 public interface UniversalEventListener {
 	/**                                                                                  

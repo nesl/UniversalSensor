@@ -14,7 +14,6 @@ import android.util.Log;
 
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensor;
-import com.ucla.nesl.lib.UniversalSensorEvent;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 
 public class UniversalPhoneDriver extends Service implements SensorEventListener, UniversalDriverListener {

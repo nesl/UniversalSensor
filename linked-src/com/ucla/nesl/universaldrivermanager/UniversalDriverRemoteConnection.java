@@ -8,7 +8,6 @@ import android.util.Log;
 
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalManagerService;
-import com.ucla.nesl.aidl.SensorParcel;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager.UniversalDriverManagerStub;
 
 public class UniversalDriverRemoteConnection implements ServiceConnection

@@ -1,9 +1,6 @@
 package com.ucla.nesl.lib;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-
-import android.R.integer;
 
 /*	public static final String CHEST_ACCELEROMETER_NAME = "ChestAccelerometer";
 	public static final String ECG_NAME = "ECG";

@@ -14,15 +14,12 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-import android.content.res.Resources.Theme;
 import android.os.PowerManager;
 import android.util.Log;
 
 import com.ucla.nesl.lib.DriverSensorData;
-import com.ucla.nesl.lib.UniversalConstants;
 import com.ucla.nesl.lib.UniversalDriverListener;
 import com.ucla.nesl.lib.UniversalSensor;
-import com.ucla.nesl.lib.UniversalSensorEvent;
 import com.ucla.nesl.universaldrivermanager.UniversalDriverManager;
 
 public class ZephyrDriver implements Runnable, UniversalDriverListener {

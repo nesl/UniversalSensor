@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import android.R.integer;
 import android.hardware.Sensor;
 import android.os.Parcel;
 import android.os.Parcelable;

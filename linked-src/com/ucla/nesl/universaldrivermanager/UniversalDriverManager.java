@@ -8,7 +8,6 @@ import android.util.Log;
 import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.aidl.IUniversalDriverManager;
 import com.ucla.nesl.lib.UniversalDriverListener;
-import com.ucla.nesl.lib.UniversalSensorEvent;
 
 public class UniversalDriverManager {
 	private static String tag = UniversalDriverManager.class.getCanonicalName();

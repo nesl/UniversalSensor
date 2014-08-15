@@ -1,6 +1,5 @@
 package com.ucla.nesl.lib;
 
-import android.os.Build;
 
 public class AndroidSensor {
 
