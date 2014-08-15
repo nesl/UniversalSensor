@@ -25,8 +25,11 @@ public class UniversalManagerRemoteConnection implements ServiceConnection {
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		Log.d(tag, "Successfully established connection with UniversalService, now ready to perform remote operations.");
+		
 		this.service = IUniversalManagerService.Stub.asInterface(service);
+		Log.d(tag, "Successfully established connection with UniversalService, now ready to perform remote operations.");
+		
+		mManager.getEventListener().onUniversalServiceConnected();
 	}
 
 	@Override

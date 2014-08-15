@@ -240,4 +240,8 @@ public class UniversalSensorManager {
 			}
 		}
 	}
+
+	public UniversalEventListener getEventListener() {
+		return mstub.mlistener;
+	}
 }

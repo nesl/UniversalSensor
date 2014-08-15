@@ -33,4 +33,6 @@ public interface UniversalEventListener {
 	void historicalDataResponse(int txnID, String devID, int sType, int cmd, JSONObject result);
 
 	void disconnected();
+	
+	void onUniversalServiceConnected();
 }

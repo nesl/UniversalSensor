@@ -8,8 +8,8 @@ import com.ucla.nesl.aidl.Device;
 import com.ucla.nesl.lib.UniversalSensorNameMap;
 
 public class Utils {
-	public static void logDeviceList(String tag, ArrayList<Device> devList) {
-		if (devList == null) {
+	public static void printDeviceList(String tag, ArrayList<Device> devList) {
+		if (devList == null || devList.isEmpty()) {
 			Log.i(tag, "No devices");
 			return;
 		}

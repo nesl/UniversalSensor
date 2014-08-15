@@ -485,9 +485,6 @@ public class FlowEngine extends Service implements UniversalEventListener {
 		DebugHelper.startTrace();
 		
 		mUniDevManager = UniversalSensorManager.create(getApplicationContext(), this);
-		
-		ArrayList<com.ucla.nesl.aidl.Device> devList = mUniDevManager.listDevices();
-		Utils.logDeviceList(TAG, devList);
 	}
 
 	@Override
@@ -589,5 +586,11 @@ public class FlowEngine extends Service implements UniversalEventListener {
 	public void disconnected() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onUniversalServiceConnected() {
+		ArrayList<com.ucla.nesl.aidl.Device> devList = mUniDevManager.listDevices();
+		Utils.printDeviceList(TAG, devList);
 	}
 }

@@ -268,4 +268,10 @@ public class UniversalSensorApp extends Activity implements UniversalEventListen
 	@Override
 	public void disconnected() {
 	}
+
+	@Override
+	public void onUniversalServiceConnected() {
+		// TODO Auto-generated method stub
+		
+	}
 }
