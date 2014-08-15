@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello FlowEngine!</string>
+    <string name="app_name">FlowEngine</string>
+    <string name="foreground_service_started">FlowEngine service running..</string>
+
+</resources>
